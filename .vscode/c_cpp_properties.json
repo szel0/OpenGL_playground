@@ -1,0 +1,26 @@
+{
+  "configurations": [
+    {
+      "name": "windows-gcc-x64",
+      "includePath": [
+        "${workspaceFolder}/Libraries/include",  // Dodajemy folder z bibliotekami
+        "${workspaceFolder}/Libraries/include/glad",  // Folder glad
+        "${workspaceFolder}/Libraries/include/GLFW",  // Folder GLFW
+        "${workspaceFolder}/Libraries/include/KHR",  // Folder KHR
+        "${workspaceFolder}/src"  // Ścieżka do folderu src, jeśli masz tam nagłówki
+      ],
+      "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "windows-gcc-x64",
+      "compilerArgs": [
+        "-I${workspaceFolder}/Libraries/include",  // Ścieżka do nagłówków
+        "-I${workspaceFolder}/Libraries/include/glad",
+        "-I${workspaceFolder}/Libraries/include/GLFW",
+        "-I${workspaceFolder}/Libraries/include/KHR",
+        "-I${workspaceFolder}/src"  // Ścieżka do folderu src, jeśli są tam nagłówki
+      ]
+    }
+  ],
+  "version": 4
+}
