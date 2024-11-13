@@ -12,12 +12,13 @@ using namespace std;
 
 // Koordynaty wierzcholkow
 GLfloat vertices[] = {
-    -0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f, // Lewy dolny
-    0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f, // Prawy gorny
-    0.0f,  0.5f * float(sqrt(3)) * 2 / 3, 0.0f, // Gorny
-    -0.5f / 2,  0.5f * float(sqrt(3)) / 6, 0.0f, // Wewnetrzny lewy
-    0.5f / 2,  0.5f * float(sqrt(3)) / 6, 0.0f, // Wewnetrzny prawy
-    0.0f / 2, -0.5f * float(sqrt(3)) / 3, 0.0f // Wewnetrzny dolny        
+    //                  KOODRYNATY WIERZCHOLKOW       |     KOLORY (RGB)
+    -0.5f,     -0.5f * float(sqrt(3)) / 3,     0.0f,    0.80f, 0.30f, 0.02f, // Lewy dolny
+     0.5f,     -0.5f * float(sqrt(3)) / 3,     0.0f,    0.80f, 0.30f, 0.02f,  // Prawy dolny
+     0.0f,      0.5f * float(sqrt(3)) * 2 / 3, 0.0f,    0.50f, 0.60f, 0.10f,  // Gorny
+    -0.5f / 2,  0.5f * float(sqrt(3)) / 6,     0.0f,    0.65f, 0.45f, 0.06f,  // Wewnetrzny lewy
+     0.5f / 2,  0.5f * float(sqrt(3)) / 6,     0.0f,    0.65f, 0.45f, 0.06f,  // Wewnetrzny prawy
+     0.0f / 2, -0.5f * float(sqrt(3)) / 3,     0.0f,    0.80f, 0.30f, 0.02f  // Wewnetrzny dolny        
 };
 
 // Indeksy okreslajace kolejnosc wierzcholkow
@@ -76,7 +77,8 @@ int main(){
     EBO EBO1(indices, sizeof(indices));
 
     // Laczymy VBO z VAO
-    VAO1.LinkVBO(VBO1, 0);
+    VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
+    VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(3)));
 
     // Odwiazujemy wszystko, zeby przez przypadek nie zmodyfikowac
     VAO1.Unbind();
