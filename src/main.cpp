@@ -35,14 +35,6 @@ int main(){
     // Oznacza to, ze mamy dostep tylko do nowoczesnych funkcji
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    // Koordynaty wierzcholkow
-    GLfloat vertices[] = {
-        -0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f,
-         0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f,
-         0.0f,  0.5f * float(sqrt(3)) / 3, 0.0f
-    };
-
-
     // Tworzymy obiekt okna GLFW o wielkosci 800x800px, nazwany "SzelkowskiOpenGL"
     GLFWwindow* window = glfwCreateWindow(800, 800, "SzelkowskiOpenGL", NULL, NULL);
     // Sprawdzamy, czy okno poprawnie sie utworzylo 
@@ -88,12 +80,29 @@ int main(){
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
+    // Koordynaty wierzcholkow
+    GLfloat vertices[] = {
+        -0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f, // Lewy dolny
+         0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f, // Prawy gorny
+         0.0f,  0.5f * float(sqrt(3)) * 2 / 3, 0.0f, // Gorny
+        -0.5f / 2,  0.5f * float(sqrt(3)) / 6, 0.0f, // Wewnetrzny lewy
+         0.5f / 2,  0.5f * float(sqrt(3)) / 6, 0.0f, // Wewnetrzny prawy
+         0.0f / 2, -0.5f * float(sqrt(3)) / 3, 0.0f // Wewnetrzny dolny        
+    };
+
+    GLuint indices[] = {
+        0, 3, 5, // Lewy dolny trojkat
+        3, 2, 4, // Prawy dolny trojkat
+        5, 4, 1  // Gorny trojkat 
+    };
+
     // Tworzymy kontenery referencyjne dla Vertex Array Object i Vertex Buffer Object
-    GLuint VAO, VBO;    
+    GLuint VAO, VBO, EBO;    
 
     // Generujemy VAO i VBO, po jednym obiekcie
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
 
     // Ustawiamy VAO jako bierzacy obiekt VertexArray
     glBindVertexArray(VAO);
@@ -103,6 +112,9 @@ int main(){
     // Wprowadzamy wierzcholki do VBO
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
     // Konfigurujemy atrybuty wierzcholkow, aby OpenGL wiedzial, jak odczytywac VBO
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     // Wlaczamy atrybuty wierzcholkow, aby OpenGL wiedzial, ze ma ich uzywac
@@ -111,24 +123,33 @@ int main(){
     // Wiazemy VBO i VAO z 0, aby przypadkowo nie modyfikowac kontenerow
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // Glowna petla while
     while(!glfwWindowShouldClose(window)){
-
+        // Okreslamy kolor tla
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
+        // Czyscimy bufor tylni i przypisujemy mu nowy kolor
         glClear(GL_COLOR_BUFFER_BIT);
+        // Przekazujemy OpenGL, ktorego programu shaderow chcemy uzyc
         glUseProgram(shaderProgram);
+        // Wiazemy VAO, aby OpenGL wiedzial, ze ma go uzywac
         glBindVertexArray(VAO);
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        // Rysujemy trojkat
+        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+
+        // Zmieniamy bufor tylni z przednim
         glfwSwapBuffers(window);
 
         // Obslugujemy wszystkie zdarzenia GLFW
         glfwPollEvents();
     }
 
+    // Usuwamy wszystkie stworzone obiekty
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
     glDeleteProgram(shaderProgram);
 
     // Usuwamy okno przed zakonczeniem programu
