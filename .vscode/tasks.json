@@ -14,6 +14,10 @@
                 "-I${workspaceFolder}/src",  // Ścieżka do folderu src
                 "${workspaceFolder}/src/main.cpp",  // Główny plik źródłowy
                 "${workspaceFolder}/src/gl.c",  // Plik źródłowy
+                "${workspaceFolder}/src/shaderClass.cpp",  // Dodanie pliku źródłowego shaderClass
+                "${workspaceFolder}/src/EBO.cpp",  // Dodanie pliku źródłowego EBO
+                "${workspaceFolder}/src/VBO.cpp",  // Dodanie pliku źródłowego VBO
+                "${workspaceFolder}/src/VAO.cpp",  // Dodanie pliku źródłowego VAO
                 "-lglfw3",  // Biblioteka glfw3
                 "-o", "${workspaceFolder}/app.exe",  // Ścieżka do wyjściowego exe
                 "-lgdi32",  // Dodanie biblioteki GDI32

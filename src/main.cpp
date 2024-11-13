@@ -3,24 +3,29 @@
 #include <GLFW/glfw3.h>
 #include <math.h>
 
+#include "shaderClass.h"
+#include "VBO.h"
+#include "EBO.h"
+#include "VAO.h"
+
 using namespace std;
 
-// Kod zrodlowy vertex shader'a
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
-// Kod zrodlowy fragment shader'a
-const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(0.8f, 0.3f, 0.02f, 1.0f);\n"
-"}\n\0";
+// Koordynaty wierzcholkow
+GLfloat vertices[] = {
+    -0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f, // Lewy dolny
+    0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f, // Prawy gorny
+    0.0f,  0.5f * float(sqrt(3)) * 2 / 3, 0.0f, // Gorny
+    -0.5f / 2,  0.5f * float(sqrt(3)) / 6, 0.0f, // Wewnetrzny lewy
+    0.5f / 2,  0.5f * float(sqrt(3)) / 6, 0.0f, // Wewnetrzny prawy
+    0.0f / 2, -0.5f * float(sqrt(3)) / 3, 0.0f // Wewnetrzny dolny        
+};
 
-
+// Indeksy okreslajace kolejnosc wierzcholkow
+GLuint indices[] = {
+    0, 3, 5, // Lewy dolny trojkat
+    3, 2, 4, // Prawy dolny trojkat
+    5, 4, 1  // Gorny trojkat 
+};
 
 int main(){
     // Inicjalizacja GLFW
@@ -47,83 +52,37 @@ int main(){
     glfwMakeContextCurrent(window);
 
     // Ladujemy GLAD, aby skonfigurowal OpenGL'a
-    gladLoadGL(((GLADloadfunc)glfwGetProcAddress));
+    if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
+        std::cerr << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
 
     // Okreslamy obszar widoku OpenGL'a w oknie
     // W tym przypadku (x, y) = ([0, 800], [0, 800])
     glViewport(0, 0, 800, 800);
 
-    // Tworzymy obiekt vertexShader i uzyskujemy jego referencję
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    // Dolaczamy kod zrodlowy vertexShadera do obiektu
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    // Kompilujemy vertexShader do kodu maszynowego
-    glCompileShader(vertexShader);
+    // Tworzymy obiekt shaderProgram typu Shader uzywajac shaderow z Recource Files\Shaders
+    Shader shaderProgram("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Shaders\\default.vert", 
+                         "C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Shaders\\default.frag");
 
-    // Tworzymy obiekt fragmentShader i uzyskujemy jego referencję
-    GLuint fragmentShader = glCreateShader(GL_VERTEX_SHADER);
-    // Dolaczamy kod zrodlowy fragmentShadera do obiektu
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    // Kompilujemy fragmentShader do kodu maszynowego
-    glCompileShader(fragmentShader);
 
-    // Tworzymy obiekt shaderProgram i uzyskujemy jego referencję
-    GLuint shaderProgram = glCreateProgram();
-    
-    // Dolaczamy vertexShader i fragmentShader do shaderProgram
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    // Laczymy wszystkie shadery w shaderProgram
-    glLinkProgram(shaderProgram);
+    // Tworzymy Vertex Array Object i go wiazemy
+    VAO VAO1;
+    VAO1.Bind();
 
-    // Usuwamy niepotrzebne juz obiekty
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    // Tworzymy Vertex Buffer Object i laczymy go z wierzcholkami
+    VBO VBO1(vertices, sizeof(vertices));
+    // Tworzymy Element Buffer Object i laczymy go z indeksami
+    EBO EBO1(indices, sizeof(indices));
 
-    // Koordynaty wierzcholkow
-    GLfloat vertices[] = {
-        -0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f, // Lewy dolny
-         0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f, // Prawy gorny
-         0.0f,  0.5f * float(sqrt(3)) * 2 / 3, 0.0f, // Gorny
-        -0.5f / 2,  0.5f * float(sqrt(3)) / 6, 0.0f, // Wewnetrzny lewy
-         0.5f / 2,  0.5f * float(sqrt(3)) / 6, 0.0f, // Wewnetrzny prawy
-         0.0f / 2, -0.5f * float(sqrt(3)) / 3, 0.0f // Wewnetrzny dolny        
-    };
+    // Laczymy VBO z VAO
+    VAO1.LinkVBO(VBO1, 0);
 
-    GLuint indices[] = {
-        0, 3, 5, // Lewy dolny trojkat
-        3, 2, 4, // Prawy dolny trojkat
-        5, 4, 1  // Gorny trojkat 
-    };
+    // Odwiazujemy wszystko, zeby przez przypadek nie zmodyfikowac
+    VAO1.Unbind();
+    VBO1.Unbind();
+    EBO1.Unbind();
 
-    // Tworzymy kontenery referencyjne dla Vertex Array Object i Vertex Buffer Object
-    GLuint VAO, VBO, EBO;    
-
-    // Generujemy VAO i VBO, po jednym obiekcie
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    // Ustawiamy VAO jako bierzacy obiekt VertexArray
-    glBindVertexArray(VAO);
-
-    // Wiazemy VBO, okreslajac, ze jest to GL_ARRAY_BUFFER
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    // Wprowadzamy wierzcholki do VBO
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // Konfigurujemy atrybuty wierzcholkow, aby OpenGL wiedzial, jak odczytywac VBO
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    // Wlaczamy atrybuty wierzcholkow, aby OpenGL wiedzial, ze ma ich uzywac
-    glEnableVertexAttribArray(0);
-
-    // Wiazemy VBO i VAO z 0, aby przypadkowo nie modyfikowac kontenerow
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // Glowna petla while
     while(!glfwWindowShouldClose(window)){
@@ -132,10 +91,9 @@ int main(){
         // Czyscimy bufor tylni i przypisujemy mu nowy kolor
         glClear(GL_COLOR_BUFFER_BIT);
         // Przekazujemy OpenGL, ktorego programu shaderow chcemy uzyc
-        glUseProgram(shaderProgram);
+        shaderProgram.Activate();
         // Wiazemy VAO, aby OpenGL wiedzial, ze ma go uzywac
-        glBindVertexArray(VAO);
-
+        VAO1.Bind();
         // Rysujemy trojkat
         glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
 
@@ -147,11 +105,9 @@ int main(){
     }
 
     // Usuwamy wszystkie stworzone obiekty
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
-    glDeleteProgram(shaderProgram);
-
+    VAO1.Delete();
+    VBO1.Delete();
+    EBO1.Delete();
     // Usuwamy okno przed zakonczeniem programu
     glfwDestroyWindow(window);
 
