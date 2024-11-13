@@ -26,7 +26,7 @@ int main(){
     glfwInit();
 
 
-    // Informuje GLFW, ze uzywam OpenGL'a w wersji 3.
+    // Informujemy GLFW, ze uzywam OpenGL'a w wersji 3.
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
@@ -46,19 +46,33 @@ int main(){
     // Wprowadzamy okno do bieżącego kontekstu
     glfwMakeContextCurrent(window);
 
+    // Ladujemy GLAD, aby skonfigurowal OpenGL'a
     gladLoadGL(((GLADloadfunc)glfwGetProcAddress));
 
+    // Okreslamy obszar widoku OpenGL'a w oknie
+    // W tym przypadku (x, y) = ([0, 800], [0, 800])
     glViewport(0, 0, 800, 800);
 
+    // Okreslamy kolor tla
     glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
+
+    // Czyscimy bufor tla i przypisujemy nowy kolor
     glClear(GL_COLOR_BUFFER_BIT);
+
+    // Zamieniamy bufor tla z buforem poprzednim
     glfwSwapBuffers(window);
 
+    
+    // Glowna petla while
     while(!glfwWindowShouldClose(window)){
+        // Obslugujemy wszystkie zdarzenia GLFW
         glfwPollEvents();
     }
 
+    // Usuwamy okno przed zakonczeniem programu
     glfwDestroyWindow(window);
+
+    // Zwalniamy zasoby GLFW przed zakonczeniem programu
     glfwTerminate();
     return 0;
 }
