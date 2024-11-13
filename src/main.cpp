@@ -4,20 +4,46 @@
 
 using namespace std;
 
+// Kod zrodlowy vertex shader'a
+const char* vertexShaderSource = "#version 330 core\n"
+"layout (location = 0) in vec3 aPos;\n"
+"void main()\n"
+"{\n"
+"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+"}\0";
+// Kod zrodlowy fragment shader'a
+const char* fragmentShaderSource = "#version 330 core\n"
+"out vec4 FragColor;\n"
+"void main()\n"
+"{\n"
+"   FragColor = vec4(0.8f, 0.3f, 0.02f, 1.0f);\n"
+"}\n\0";
+
+
+
 int main(){
+    // Inicjalizacja GLFW
     glfwInit();
 
+
+    // Informuje GLFW, ze uzywam OpenGL'a w wersji 3.
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
+    // Informujemy GLFW, ze uzywamy profilu CORE
+    // Oznacza to, ze mamy dostep tylko do nowoczesnych funkcji
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 800, "Szelkowski", NULL, NULL);
+
+    // Tworzymy obiekt okna GLFW o wielkosci 800x800px, nazwany "SzelkowskiOpenGL"
+    GLFWwindow* window = glfwCreateWindow(800, 800, "SzelkowskiOpenGL", NULL, NULL);
+    // Sprawdzamy, czy okno poprawnie sie utworzylo 
     if (window == NULL){
         cout << "Failed to create GLFW window" << endl;
         glfwTerminate();
         return -1;
     }
+    // Wprowadzamy okno do bieżącego kontekstu
     glfwMakeContextCurrent(window);
 
     gladLoadGL(((GLADloadfunc)glfwGetProcAddress));
