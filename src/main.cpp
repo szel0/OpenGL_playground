@@ -85,6 +85,8 @@ int main(){
     VBO1.Unbind();
     EBO1.Unbind();
 
+    GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
+
 
     // Glowna petla while
     while(!glfwWindowShouldClose(window)){
@@ -94,6 +96,7 @@ int main(){
         glClear(GL_COLOR_BUFFER_BIT);
         // Przekazujemy OpenGL, ktorego programu shaderow chcemy uzyc
         shaderProgram.Activate();
+        glUniform1f(uniID, 0.1f);
         // Wiazemy VAO, aby OpenGL wiedzial, ze ma go uzywac
         VAO1.Bind();
         // Rysujemy trojkat
