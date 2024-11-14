@@ -12,18 +12,25 @@
 #include "VBO.h"
 #include "EBO.h"
 #include "VAO.h"
+#include "Camera.h"
 
 using namespace std;
 
 const unsigned int width = 800;
 const unsigned int height = 800;
 
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+
 
 // Koordynaty wierzcholkow
 GLfloat vertices[] = {
 	// Dolna podstawa
     -0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,  0.0f, 0.0f, // A
-     0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,  0.0f, 0.1f, // B
+     0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,  0.0f, 1.0f, // B
      0.5f, -0.5f,  0.5f,    1.f, 0.f, 0.f,  1.0f, 1.0f, // C
     -0.5f, -0.5f,  0.5f,    1.f, 0.f, 0.f,  1.0f, 0.0f, // D
 
@@ -56,6 +63,12 @@ GLfloat vertices[] = {
      0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,  1.0f, 0.0f, // F
      0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  1.0f, 1.0f, // G
     -0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  0.0f, 1.0f  // H
+};
+
+vec3 positions[9] = {
+    {0.0f, 0.0f, 0.0f}, {2.0f, 0.0f, 0.0f}, {-2.0f, 0.0f, 0.0f},
+    {0.0f, 2.0f, 0.0f}, {2.0f, 2.0f, 0.0f}, {-2.0f, 2.0f, 0.0f},
+    {0.0f, 0.0f, 2.0f}, {2.0f, 0.0f, 2.0f}, {-2.0f, 0.0f, 2.0f}
 };
 
 // Indeksy okreslajace kolejnosc wierzcholkow
@@ -100,6 +113,10 @@ int main(){
         glfwTerminate();
         return -1;
     }
+
+    glfwSetKeyCallback(window, key_callback);
+
+
     // Wprowadzamy okno do bieżącego kontekstu
     glfwMakeContextCurrent(window);
 
@@ -137,17 +154,21 @@ int main(){
     VBO1.Unbind();
     EBO1.Unbind();
 
-    GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
+    mat4x4 model;
 
     Texture chihuahua("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\chihuahua.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
 	chihuahua.texUnit(shaderProgram, "tex0", 0);
 
-    mat4x4 model, view, proj;
+    //mat4x4 model, view, proj;
 
     glEnable(GL_DEPTH_TEST);
 
+    vec3 position = {0.0f, 0.0f, 2.0f};
+    Camera camera(width, height, position);
+
     // Glowna petla while
     while(!glfwWindowShouldClose(window)){
+        
         // Okreslamy kolor tla
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         // Czyscimy bufor tylni i przypisujemy mu nowy kolor
@@ -155,28 +176,27 @@ int main(){
         // Przekazujemy OpenGL, ktorego programu shaderow chcemy uzyc
         shaderProgram.Activate();
 
-        mat4x4_identity(model);
-        mat4x4_identity(view);
-        mat4x4_identity(proj);
+        camera.Inputs(window);
+        camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
 
-        mat4x4_rotate(model, model, 0.5f, 1.0f, 0.3f, (float) glfwGetTime());
-        mat4x4_translate(view, 0.0f, 0.0f, -5.0f);
-        mat4x4_perspective(proj, 45.0f * M_PI / 180.0f, float(width/height), 0.1f, 100.0f);
-
-        int modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (const GLfloat*) model);
-
-        int viewLoc = glGetUniformLocation(shaderProgram.ID, "view");
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, (const GLfloat*) view);
-
-        int projLoc = glGetUniformLocation(shaderProgram.ID, "proj");
-        glUniformMatrix4fv(projLoc, 1, GL_FALSE, (const GLfloat*) proj);
-
-
-        glUniform1f(uniID, 0.5f);
         chihuahua.Bind();
         // Wiazemy VAO, aby OpenGL wiedzial, ze ma go uzywac
         VAO1.Bind();
+
+        for (int i = 0; i < 9; ++i) {
+            // Resetowanie macierzy modelu do macierzy jednostkowej
+            mat4x4_identity(model);
+
+            // Translacja do pozycji sześcianu
+            mat4x4_translate_in_place(model, positions[i][0], positions[i][1], positions[i][2]);
+
+            // Ustawienie macierzy modelu w shaderze
+            glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, (const GLfloat*)model);
+
+            // Rysowanie sześcianu
+            glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(int), GL_UNSIGNED_INT, 0);
+        }
+
         // Rysujemy trojkaty
         glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(int), GL_UNSIGNED_INT, 0);
 

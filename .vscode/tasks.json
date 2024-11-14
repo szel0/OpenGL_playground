@@ -21,6 +21,7 @@
                 "${workspaceFolder}/src/VAO.cpp",  // Dodanie pliku źródłowego VAO
                 "${workspaceFolder}/src/stb.cpp",
                 "${workspaceFolder}/src/Texture.cpp",
+                "${workspaceFolder}/src/Camera.cpp",
                 "-lglfw3",  // Biblioteka glfw3
                 "-o", "${workspaceFolder}/app.exe",  // Ścieżka do wyjściowego exe
                 "-lgdi32",  // Dodanie biblioteki GDI32

@@ -86,6 +86,36 @@ LINMATH_H_FUNC void vec3_reflect(vec3 r, vec3 const v, vec3 const n)
 		r[i] = v[i] - p*n[i];
 }
 
+// Funkcja do rotacji wektora 3D wokół osi
+LINMATH_H_FUNC void vec3_rotate(vec3 result, vec3 const v, float angle, vec3 const axis) {
+    vec3 axis_norm;
+    vec3_norm(axis_norm, axis);  // Normalizujemy oś rotacji
+
+    // Tworzymy macierz obrotu wokół osi
+    float cos_angle = cosf(angle);
+    float sin_angle = sinf(angle);
+
+    float dot = vec3_mul_inner(v, axis_norm);  // iloczyn skalarny wektora z osią
+
+    // Obliczanie macierzy rotacji (Rodrigues' rotation formula)
+    result[0] = v[0] * cos_angle + axis_norm[0] * dot * (1 - cos_angle) + (axis_norm[1] * v[2] - axis_norm[2] * v[1]) * sin_angle;
+    result[1] = v[1] * cos_angle + axis_norm[1] * dot * (1 - cos_angle) + (axis_norm[2] * v[0] - axis_norm[0] * v[2]) * sin_angle;
+    result[2] = v[2] * cos_angle + axis_norm[2] * dot * (1 - cos_angle) + (axis_norm[0] * v[1] - axis_norm[1] * v[0]) * sin_angle;
+}
+
+LINMATH_H_FUNC float vec3_angle(vec3 const a, vec3 const b) {
+    float dot = vec3_mul_inner(a, b);
+    float len_a = vec3_len(a);
+    float len_b = vec3_len(b);
+    
+    // Aby uniknąć błędów numerycznych przy wartościach bardzo bliskich 1 lub -1
+    float cos_theta = dot / (len_a * len_b);
+    if (cos_theta > 1.0f) cos_theta = 1.0f;
+    if (cos_theta < -1.0f) cos_theta = -1.0f;
+    
+    return acosf(cos_theta);  // Kąt w radianach
+}
+
 LINMATH_H_FUNC void vec4_mul_cross(vec4 r, vec4 const a, vec4 const b)
 {
 	r[0] = a[1]*b[2] - a[2]*b[1];

@@ -1,0 +1,101 @@
+#define _USE_MATH_DEFINES
+
+#include "Camera.h"
+
+Camera::Camera(int width, int height, vec3 position){
+    Camera::width = width;
+    Camera::height = height;
+    Position[0] = position[0];
+    Position[1] = position[1];
+    Position[2] = position[2];
+}
+
+void Camera::Matrix(float FOVdeg, float nearPlane, float farPlane, Shader& shader, const char* uniform){
+    mat4x4 view, proj, pv;
+    mat4x4_identity(view);
+    mat4x4_identity(proj);
+
+    vec3 Center;
+    vec3_add(Center, Position, Orientation);
+
+    mat4x4_look_at(view, Position, Center, Up);
+    mat4x4_perspective(proj, FOVdeg * M_PI / 180.0f, float(width/height), nearPlane, farPlane);
+
+    mat4x4_mul(pv, proj, view);
+
+    glUniformMatrix4fv(glGetUniformLocation(shader.ID, uniform), 1, GL_FALSE, (const GLfloat*) pv);
+}
+
+
+void Camera::Inputs(GLFWwindow* window){
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS){
+        vec3 temp;
+        vec3_scale(temp, Orientation, speed);
+        vec3_add(Position, Position, temp);
+        std::cout << "Position: (" << Position[0] << ", " << Position[1] << ", " << Position[2] << ")\n";
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS){
+        vec3 temp;
+        vec3_scale(temp, Orientation, -speed);
+        vec3_add(Position, Position, temp);
+        std::cout << "Position: (" << Position[0] << ", " << Position[1] << ", " << Position[2] << ")\n";
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS){
+        vec3 temp;
+        vec3_mul_cross(temp, Orientation, Up);
+        vec3_norm(temp, temp);
+        vec3_scale(temp, temp, -speed);
+        vec3_add(Position, Position, temp);
+        std::cout << "Position: (" << Position[0] << ", " << Position[1] << ", " << Position[2] << ")\n";
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS){
+        vec3 temp;
+        vec3_mul_cross(temp, Orientation, Up);
+        vec3_norm(temp, temp);
+        vec3_scale(temp, temp, speed);
+        vec3_add(Position, Position, temp);
+        std::cout << "Position: (" << Position[0] << ", " << Position[1] << ", " << Position[2] << ")\n";
+    }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS){
+        vec3 temp;
+        vec3_scale(temp, Up, speed);
+        vec3_add(Position, Position, temp);
+        std::cout << "Position: (" << Position[0] << ", " << Position[1] << ", " << Position[2] << ")\n";
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS){
+        vec3 temp;
+        vec3_scale(temp, Up, -speed);
+        vec3_add(Position, Position, temp);
+        std::cout << "Position: (" << Position[0] << ", " << Position[1] << ", " << Position[2] << ")\n";
+    }
+    if(true){
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+
+
+        double mouseX, mouseY;
+
+        glfwGetCursorPos(window, &mouseX, &mouseY);
+
+        float rotX = sens * (float)(mouseY - (height / 2)) / height;
+		float rotY = sens * (float)(mouseX - (width / 2)) / width;
+
+        vec3 newOrientation, temp;
+        vec3_mul_cross(temp, Orientation, Up);
+        vec3_norm(temp, temp);
+
+        vec3_rotate(newOrientation, Orientation, -rotX * M_PI / 180.0f, temp);
+
+        float angle = vec3_angle(newOrientation, Up);
+
+        if (fabs(angle - M_PI_2) <= 85.0f * M_PI / 180.0f){
+            Orientation[0] = newOrientation[0];
+            Orientation[1] = newOrientation[1];
+            Orientation[2] = newOrientation[2];
+        }
+
+        vec3_rotate(Orientation, Orientation, -rotY * M_PI / 180.0f, Up);
+
+
+        glfwSetCursorPos(window, (width / 2), (height / 2));
+    }
+}
