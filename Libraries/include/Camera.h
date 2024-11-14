@@ -13,6 +13,7 @@ class Camera{
         vec3 Orientation = {0.0f, 0.0f, -1.0f};
         vec3 Up = {0.0f, 1.0f, 0.0f};
 
+        bool firstClick = true;
 
         int width;
         int height;

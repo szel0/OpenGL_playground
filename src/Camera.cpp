@@ -68,9 +68,13 @@ void Camera::Inputs(GLFWwindow* window){
         vec3_add(Position, Position, temp);
         std::cout << "Position: (" << Position[0] << ", " << Position[1] << ", " << Position[2] << ")\n";
     }
-    if(true){
+    if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS){
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
+        if (firstClick){
+            glfwSetCursorPos(window, (width / 2), (height / 2));
+			firstClick = false;
+        }
 
         double mouseX, mouseY;
 
@@ -97,5 +101,10 @@ void Camera::Inputs(GLFWwindow* window){
 
 
         glfwSetCursorPos(window, (width / 2), (height / 2));
+    } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE){
+        // Unhides cursor since camera is not looking around anymore
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		// Makes sure the next time the camera looks around it doesn't jump
+		firstClick = true;
     }
 }

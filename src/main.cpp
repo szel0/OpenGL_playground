@@ -25,6 +25,36 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
+// Tablica z pozycjami sześcianów
+vec3 cubePositions[26] = {
+    {5.0f, 0.0f, 0.0f},
+    {-5.0f, 0.0f, 0.0f},
+    {0.0f, 5.0f, 0.0f},
+    {0.0f, -5.0f, 0.0f},
+    {0.0f, 0.0f, 5.0f}, 
+    {0.0f, 0.0f, -5.0f},
+    {3.0f, 3.0f, 0.0f},
+    {-3.0f, 3.0f, 0.0f},
+    {3.0f, -3.0f, 0.0f},
+    {-3.0f, -3.0f, 0.0f},
+    {0.0f, 3.0f, 3.0f},
+    {0.0f, -3.0f, 3.0f},
+    {0.0f, 3.0f, -3.0f},
+    {0.0f, -3.0f, -3.0f},
+    {3.0f, 0.0f, 3.0f},
+    {-3.0f, 0.0f, 3.0f},
+    {3.0f, 0.0f, -3.0f},
+    {-3.0f, 0.0f, -3.0f},
+    {5.0f, 5.0f, 5.0f},
+    {-5.0f, 5.0f, 5.0f},
+    {5.0f, -5.0f, 5.0f},
+    {-5.0f, -5.0f, 5.0f},
+    {5.0f, 5.0f, -5.0f},
+    {-5.0f, 5.0f, -5.0f},
+    {5.0f, -5.0f, -5.0f},
+    {-5.0f, -5.0f, -5.0f}
+};
+
 
 // Koordynaty wierzcholkow
 GLfloat vertices[] = {
@@ -63,12 +93,6 @@ GLfloat vertices[] = {
      0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,  1.0f, 0.0f, // F
      0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  1.0f, 1.0f, // G
     -0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  0.0f, 1.0f  // H
-};
-
-vec3 positions[9] = {
-    {0.0f, 0.0f, 0.0f}, {2.0f, 0.0f, 0.0f}, {-2.0f, 0.0f, 0.0f},
-    {0.0f, 2.0f, 0.0f}, {2.0f, 2.0f, 0.0f}, {-2.0f, 2.0f, 0.0f},
-    {0.0f, 0.0f, 2.0f}, {2.0f, 0.0f, 2.0f}, {-2.0f, 0.0f, 2.0f}
 };
 
 // Indeksy okreslajace kolejnosc wierzcholkow
@@ -154,8 +178,6 @@ int main(){
     VBO1.Unbind();
     EBO1.Unbind();
 
-    mat4x4 model;
-
     Texture chihuahua("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\chihuahua.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
 	chihuahua.texUnit(shaderProgram, "tex0", 0);
 
@@ -163,8 +185,10 @@ int main(){
 
     glEnable(GL_DEPTH_TEST);
 
-    vec3 position = {0.0f, 0.0f, 2.0f};
+    vec3 position = {0.0f, 0.0f, 0.0f};
     Camera camera(width, height, position);
+
+    float FOV = 45.0f;
 
     // Glowna petla while
     while(!glfwWindowShouldClose(window)){
@@ -177,28 +201,40 @@ int main(){
         shaderProgram.Activate();
 
         camera.Inputs(window);
-        camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
+        camera.Matrix(FOV, 0.1f, 100.0f, shaderProgram, "camMatrix");
+
+        // Obsługa klawiszy Q i E dla zmiany FOV
+        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+            if (FOV - 0.01f >= 10.0f)   FOV -= 0.01f;
+        }
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+            if (FOV + 0.01f <= 120.0f)   FOV += 0.01f;
+        }
 
         chihuahua.Bind();
         // Wiazemy VAO, aby OpenGL wiedzial, ze ma go uzywac
         VAO1.Bind();
 
-        for (int i = 0; i < 9; ++i) {
-            // Resetowanie macierzy modelu do macierzy jednostkowej
+        // Renderowanie 10 sześcianów
+        for (int i = 0; i < 26; i++) {
+            mat4x4 model;
             mat4x4_identity(model);
 
-            // Translacja do pozycji sześcianu
-            mat4x4_translate_in_place(model, positions[i][0], positions[i][1], positions[i][2]);
+            
+            mat4x4_translate(model, cubePositions[i][0], cubePositions[i][1], cubePositions[i][2]);
+            mat4x4_rotate(model, model, 0.3f, 0.5f, 0.8f, (float)glfwGetTime());
 
-            // Ustawienie macierzy modelu w shaderze
-            glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, (const GLfloat*)model);
 
-            // Rysowanie sześcianu
-            glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(int), GL_UNSIGNED_INT, 0);
+
+            // Przekazanie modelu do shadera
+            GLuint modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (const GLfloat*)model);
+
+            // Rysujemy trojkaty
+            glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(int), GL_UNSIGNED_INT, 0);
         }
 
-        // Rysujemy trojkaty
-        glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(int), GL_UNSIGNED_INT, 0);
+        
 
         // Zmieniamy bufor tylni z przednim
         glfwSwapBuffers(window);
