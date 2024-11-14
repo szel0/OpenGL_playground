@@ -1,9 +1,12 @@
+#define _USE_MATH_DEFINES
+
 #include <iostream>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
-#include <math.h>
+//#include <math.h>
 #include <stb/stb_image.h>
 
+#include "linmath.h"
 #include "Texture.h"
 #include "shaderClass.h"
 #include "VBO.h"
@@ -12,19 +15,68 @@
 
 using namespace std;
 
+const unsigned int width = 800;
+const unsigned int height = 800;
+
+
 // Koordynaty wierzcholkow
 GLfloat vertices[] = {
-// KOODRYNATY WIERZCHOLKOW  |     KOLORY (RGB)       |     TexCoord
-    -0.5f, -0.5f, 0.0f,         1.0f, 0.0f, 0.0f,         0.0f, 0.0f, // Lewy dolny
-    -0.5f,  0.5f, 0.0f,         0.0f, 1.0f, 0.0f,         0.0f, 1.0f, // Lewy gorny
-     0.5f,  0.5f, 0.0f,         0.0f, 0.0f, 1.0f,         1.0f, 1.0f, // Prawy gorny
-     0.5f, -0.5f, 0.0f,         1.0f, 1.0f, 1.0f,         1.0f, 0.0f  // Lewy dolny
+	// Dolna podstawa
+    -0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,  0.0f, 0.0f, // A
+     0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,  0.0f, 0.1f, // B
+     0.5f, -0.5f,  0.5f,    1.f, 0.f, 0.f,  1.0f, 1.0f, // C
+    -0.5f, -0.5f,  0.5f,    1.f, 0.f, 0.f,  1.0f, 0.0f, // D
+
+    // Przednia ściana
+    -0.5f, -0.5f, -0.5f,    0.f, 1.f, 0.f,  0.0f, 0.0f, // A
+     0.5f, -0.5f, -0.5f,    0.f, 1.f, 0.f,  1.0f, 0.0f, // B
+     0.5f,  0.5f, -0.5f,    0.f, 1.f, 0.f,  1.0f, 1.0f, // F
+    -0.5f,  0.5f, -0.5f,    0.f, 1.f, 0.f,  0.0f, 1.0f, // E
+
+    // Prawa ściana
+     0.5f, -0.5f, -0.5f,    0.f, 0.f, 1.f,  0.0f, 0.0f, // B
+     0.5f, -0.5f,  0.5f,    0.f, 0.f, 1.f,  1.0f, 0.0f, // C
+     0.5f,  0.5f,  0.5f,    0.f, 0.f, 1.f,  1.0f, 1.0f, // G
+     0.5f,  0.5f, -0.5f,    0.f, 0.f, 1.f,  0.0f, 1.0f, // F
+
+    // Tylna ściana
+    -0.5f, -0.5f,  0.5f,    1.f, 1.f, 0.f,  1.0f, 0.0f, // D
+     0.5f, -0.5f,  0.5f,    1.f, 1.f, 0.f,  0.0f, 0.0f, // C
+     0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  0.0f, 1.0f, // G
+    -0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  1.0f, 1.0f, // H
+
+    // Lewa ściana
+    -0.5f, -0.5f, -0.5f,    1.f, 0.f, 1.f,  1.0f, 0.0f, // A
+    -0.5f, -0.5f,  0.5f,    1.f, 0.f, 1.f,  0.0f, 0.0f, // D
+    -0.5f,  0.5f,  0.5f,    1.f, 0.f, 1.f,  0.0f, 1.0f, // H
+    -0.5f,  0.5f, -0.5f,    1.f, 0.f, 1.f,  1.0f, 1.0f, // E
+
+    // Górna podstawa
+    -0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,  0.0f, 0.0f, // E
+     0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,  1.0f, 0.0f, // F
+     0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  1.0f, 1.0f, // G
+    -0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  0.0f, 1.0f  // H
 };
 
 // Indeksy okreslajace kolejnosc wierzcholkow
 GLuint indices[] = {
-    0, 2, 1, // Gorny trojkat
-    0, 3, 2 // Dolny Trojkat
+    // Dolna podstawa
+    0, 1, 2,  0, 2, 3, // ABC, ACD
+
+    // Przednia ściana
+    4, 5, 6,  4, 6, 7, // ABF, AFE
+
+    // Prawa ściana
+    8, 9, 10,  8, 10, 11, // BCG, BGF
+
+    // Tylna ściana
+    12, 13, 14,  12, 14, 15, // DCG, DGH
+
+    // Lewa ściana
+    16, 17, 18,  16, 18, 19, // ADH, AHE
+
+    // Górna podstawa
+    20, 21, 22,  20, 22, 23  // EFG, EGH
 };
 
 int main(){
@@ -40,8 +92,8 @@ int main(){
     // Oznacza to, ze mamy dostep tylko do nowoczesnych funkcji
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    // Tworzymy obiekt okna GLFW o wielkosci 800x800px, nazwany "SzelkowskiOpenGL"
-    GLFWwindow* window = glfwCreateWindow(800, 800, "SzelkowskiOpenGL", NULL, NULL);
+    // Tworzymy obiekt okna GLFW o wielkosci width x heigth [px], nazwany "SzelkowskiOpenGL"
+    GLFWwindow* window = glfwCreateWindow(width, height, "SzelkowskiOpenGL", NULL, NULL);
     // Sprawdzamy, czy okno poprawnie sie utworzylo 
     if (window == NULL){
         cout << "Failed to create GLFW window" << endl;
@@ -58,8 +110,8 @@ int main(){
     }
 
     // Okreslamy obszar widoku OpenGL'a w oknie
-    // W tym przypadku (x, y) = ([0, 800], [0, 800])
-    glViewport(0, 0, 800, 800);
+    // W tym przypadku (x, y) = ([0, width], [0, height])
+    glViewport(0, 0, width, height);
 
     // Tworzymy obiekt shaderProgram typu Shader uzywajac shaderow z Recource Files\Shaders
     Shader shaderProgram("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Shaders\\default.vert", 
@@ -90,20 +142,43 @@ int main(){
     Texture chihuahua("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\chihuahua.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
 	chihuahua.texUnit(shaderProgram, "tex0", 0);
 
+    mat4x4 model, view, proj;
+
+    glEnable(GL_DEPTH_TEST);
+
     // Glowna petla while
     while(!glfwWindowShouldClose(window)){
         // Okreslamy kolor tla
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         // Czyscimy bufor tylni i przypisujemy mu nowy kolor
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         // Przekazujemy OpenGL, ktorego programu shaderow chcemy uzyc
         shaderProgram.Activate();
+
+        mat4x4_identity(model);
+        mat4x4_identity(view);
+        mat4x4_identity(proj);
+
+        mat4x4_rotate(model, model, 0.5f, 1.0f, 0.3f, (float) glfwGetTime());
+        mat4x4_translate(view, 0.0f, 0.0f, -5.0f);
+        mat4x4_perspective(proj, 45.0f * M_PI / 180.0f, float(width/height), 0.1f, 100.0f);
+
+        int modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (const GLfloat*) model);
+
+        int viewLoc = glGetUniformLocation(shaderProgram.ID, "view");
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, (const GLfloat*) view);
+
+        int projLoc = glGetUniformLocation(shaderProgram.ID, "proj");
+        glUniformMatrix4fv(projLoc, 1, GL_FALSE, (const GLfloat*) proj);
+
+
         glUniform1f(uniID, 0.5f);
         chihuahua.Bind();
         // Wiazemy VAO, aby OpenGL wiedzial, ze ma go uzywac
         VAO1.Bind();
         // Rysujemy trojkaty
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(int), GL_UNSIGNED_INT, 0);
 
         // Zmieniamy bufor tylni z przednim
         glfwSwapBuffers(window);
