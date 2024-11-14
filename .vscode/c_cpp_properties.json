@@ -7,6 +7,7 @@
         "${workspaceFolder}/Libraries/include/glad",  // Folder glad
         "${workspaceFolder}/Libraries/include/GLFW",  // Folder GLFW
         "${workspaceFolder}/Libraries/include/KHR",  // Folder KHR
+        "${workspaceFolder}/Libraries/include/stb",  // Folder stb
         "${workspaceFolder}/src"  // Ścieżka do folderu src, jeśli masz tam nagłówki
       ],
       "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",

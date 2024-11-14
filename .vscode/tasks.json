@@ -10,6 +10,7 @@
                 "-I${workspaceFolder}/Libraries/include/glad",
                 "-I${workspaceFolder}/Libraries/include/GLFW",
                 "-I${workspaceFolder}/Libraries/include/KHR",
+                "-I${workspaceFolder}/Libraries/include/stb",
                 "-L${workspaceFolder}/Libraries/lib",  // Ścieżka do katalogu z biblioteką
                 "-I${workspaceFolder}/src",  // Ścieżka do folderu src
                 "${workspaceFolder}/src/main.cpp",  // Główny plik źródłowy
@@ -18,6 +19,8 @@
                 "${workspaceFolder}/src/EBO.cpp",  // Dodanie pliku źródłowego EBO
                 "${workspaceFolder}/src/VBO.cpp",  // Dodanie pliku źródłowego VBO
                 "${workspaceFolder}/src/VAO.cpp",  // Dodanie pliku źródłowego VAO
+                "${workspaceFolder}/src/stb.cpp",
+                "${workspaceFolder}/src/Texture.cpp",
                 "-lglfw3",  // Biblioteka glfw3
                 "-o", "${workspaceFolder}/app.exe",  // Ścieżka do wyjściowego exe
                 "-lgdi32",  // Dodanie biblioteki GDI32

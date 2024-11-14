@@ -2,7 +2,9 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <math.h>
+#include <stb/stb_image.h>
 
+#include "Texture.h"
 #include "shaderClass.h"
 #include "VBO.h"
 #include "EBO.h"
@@ -12,20 +14,17 @@ using namespace std;
 
 // Koordynaty wierzcholkow
 GLfloat vertices[] = {
-    //                  KOODRYNATY WIERZCHOLKOW       |     KOLORY (RGB)
-    -0.5f,     -0.5f * float(sqrt(3)) / 3,     0.0f,    0.80f, 0.30f, 0.02f, // Lewy dolny
-     0.5f,     -0.5f * float(sqrt(3)) / 3,     0.0f,    0.80f, 0.30f, 0.02f,  // Prawy dolny
-     0.0f,      0.5f * float(sqrt(3)) * 2 / 3, 0.0f,    0.50f, 0.60f, 0.10f,  // Gorny
-    -0.5f / 2,  0.5f * float(sqrt(3)) / 6,     0.0f,    0.65f, 0.45f, 0.06f,  // Wewnetrzny lewy
-     0.5f / 2,  0.5f * float(sqrt(3)) / 6,     0.0f,    0.65f, 0.45f, 0.06f,  // Wewnetrzny prawy
-     0.0f / 2, -0.5f * float(sqrt(3)) / 3,     0.0f,    0.80f, 0.30f, 0.02f  // Wewnetrzny dolny        
+// KOODRYNATY WIERZCHOLKOW  |     KOLORY (RGB)       |     TexCoord
+    -0.5f, -0.5f, 0.0f,         1.0f, 0.0f, 0.0f,         0.0f, 0.0f, // Lewy dolny
+    -0.5f,  0.5f, 0.0f,         0.0f, 1.0f, 0.0f,         0.0f, 1.0f, // Lewy gorny
+     0.5f,  0.5f, 0.0f,         0.0f, 0.0f, 1.0f,         1.0f, 1.0f, // Prawy gorny
+     0.5f, -0.5f, 0.0f,         1.0f, 1.0f, 1.0f,         1.0f, 0.0f  // Lewy dolny
 };
 
 // Indeksy okreslajace kolejnosc wierzcholkow
 GLuint indices[] = {
-    0, 3, 5, // Lewy dolny trojkat
-    3, 2, 4, // Prawy dolny trojkat
-    5, 4, 1  // Gorny trojkat 
+    0, 2, 1, // Gorny trojkat
+    0, 3, 2 // Dolny Trojkat
 };
 
 int main(){
@@ -77,8 +76,9 @@ int main(){
     EBO EBO1(indices, sizeof(indices));
 
     // Laczymy VBO z VAO
-    VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
-    VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(3)));
+    VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
+	VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	VAO1.LinkAttrib(VBO1, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
     // Odwiazujemy wszystko, zeby przez przypadek nie zmodyfikowac
     VAO1.Unbind();
@@ -87,6 +87,8 @@ int main(){
 
     GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
 
+    Texture chihuahua("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\chihuahua.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+	chihuahua.texUnit(shaderProgram, "tex0", 0);
 
     // Glowna petla while
     while(!glfwWindowShouldClose(window)){
@@ -96,11 +98,12 @@ int main(){
         glClear(GL_COLOR_BUFFER_BIT);
         // Przekazujemy OpenGL, ktorego programu shaderow chcemy uzyc
         shaderProgram.Activate();
-        glUniform1f(uniID, 0.1f);
+        glUniform1f(uniID, 0.5f);
+        chihuahua.Bind();
         // Wiazemy VAO, aby OpenGL wiedzial, ze ma go uzywac
         VAO1.Bind();
-        // Rysujemy trojkat
-        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+        // Rysujemy trojkaty
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         // Zmieniamy bufor tylni z przednim
         glfwSwapBuffers(window);
@@ -113,6 +116,8 @@ int main(){
     VAO1.Delete();
     VBO1.Delete();
     EBO1.Delete();
+    chihuahua.Delete();
+    shaderProgram.Delete();
     // Usuwamy okno przed zakonczeniem programu
     glfwDestroyWindow(window);
 
