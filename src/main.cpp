@@ -27,72 +27,51 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
 // Tablica z pozycjami sześcianów
 vec3 cubePositions[26] = {
-    {5.0f, 0.0f, 0.0f},
-    {-5.0f, 0.0f, 0.0f},
-    {0.0f, 5.0f, 0.0f},
-    {0.0f, -5.0f, 0.0f},
-    {0.0f, 0.0f, 5.0f}, 
-    {0.0f, 0.0f, -5.0f},
-    {3.0f, 3.0f, 0.0f},
-    {-3.0f, 3.0f, 0.0f},
-    {3.0f, -3.0f, 0.0f},
-    {-3.0f, -3.0f, 0.0f},
-    {0.0f, 3.0f, 3.0f},
-    {0.0f, -3.0f, 3.0f},
-    {0.0f, 3.0f, -3.0f},
-    {0.0f, -3.0f, -3.0f},
-    {3.0f, 0.0f, 3.0f},
-    {-3.0f, 0.0f, 3.0f},
-    {3.0f, 0.0f, -3.0f},
-    {-3.0f, 0.0f, -3.0f},
-    {5.0f, 5.0f, 5.0f},
-    {-5.0f, 5.0f, 5.0f},
-    {5.0f, -5.0f, 5.0f},
-    {-5.0f, -5.0f, 5.0f},
-    {5.0f, 5.0f, -5.0f},
-    {-5.0f, 5.0f, -5.0f},
-    {5.0f, -5.0f, -5.0f},
-    {-5.0f, -5.0f, -5.0f}
+    {0.0f, 0.0f, 0.0f},
+    {-1.0f, 0.0f, 0.0f},
+    {1.0f, 0.0f, 0.0f},
+    {-0.5f, 1.0f, 0.0f},
+    {0.5f, 1.0f, 0.0f}, 
 };
 
 
 // Koordynaty wierzcholkow
 GLfloat vertices[] = {
 	// Dolna podstawa
-    -0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,  0.0f, 0.0f, // A
-     0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,  0.0f, 1.0f, // B
-     0.5f, -0.5f,  0.5f,    1.f, 0.f, 0.f,  1.0f, 1.0f, // C
-    -0.5f, -0.5f,  0.5f,    1.f, 0.f, 0.f,  1.0f, 0.0f, // D
+    -0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,  1.0f, 0.0f, // A
+     0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,  0.0f, 0.0f, // B
+     0.5f, -0.5f,  0.5f,    1.f, 0.f, 0.f,  0.0f, 1.0f, // C
+    -0.5f, -0.5f,  0.5f,    1.f, 0.f, 0.f,  1.0f, 1.0f, // D
 
     // Przednia ściana
-    -0.5f, -0.5f, -0.5f,    0.f, 1.f, 0.f,  0.0f, 0.0f, // A
-     0.5f, -0.5f, -0.5f,    0.f, 1.f, 0.f,  1.0f, 0.0f, // B
-     0.5f,  0.5f, -0.5f,    0.f, 1.f, 0.f,  1.0f, 1.0f, // F
-    -0.5f,  0.5f, -0.5f,    0.f, 1.f, 0.f,  0.0f, 1.0f, // E
+    -0.5f, -0.5f, -0.5f,    0.f, 1.f, 0.f,  1.0f, 0.0f, // A
+     0.5f, -0.5f, -0.5f,    0.f, 1.f, 0.f,  0.0f, 0.0f, // B
+     0.5f,  0.5f, -0.5f,    0.f, 1.f, 0.f,  0.0f, 1.0f, // F
+    -0.5f,  0.5f, -0.5f,    0.f, 1.f, 0.f,  1.0f, 1.0f, // E
 
     // Prawa ściana
-     0.5f, -0.5f, -0.5f,    0.f, 0.f, 1.f,  0.0f, 0.0f, // B
-     0.5f, -0.5f,  0.5f,    0.f, 0.f, 1.f,  1.0f, 0.0f, // C
-     0.5f,  0.5f,  0.5f,    0.f, 0.f, 1.f,  1.0f, 1.0f, // G
-     0.5f,  0.5f, -0.5f,    0.f, 0.f, 1.f,  0.0f, 1.0f, // F
+     0.5f, -0.5f, -0.5f,    0.f, 0.f, 1.f,  1.0f, 0.0f, // B
+     0.5f, -0.5f,  0.5f,    0.f, 0.f, 1.f,  0.0f, 0.0f, // C
+     0.5f,  0.5f,  0.5f,    0.f, 0.f, 1.f,  0.0f, 1.0f, // G
+     0.5f,  0.5f, -0.5f,    0.f, 0.f, 1.f,  1.0f, 1.0f, // F
 
     // Tylna ściana
-    -0.5f, -0.5f,  0.5f,    1.f, 1.f, 0.f,  1.0f, 0.0f, // D
-     0.5f, -0.5f,  0.5f,    1.f, 1.f, 0.f,  0.0f, 0.0f, // C
-     0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  0.0f, 1.0f, // G
-    -0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  1.0f, 1.0f, // H
+    -0.5f, -0.5f,  0.5f,    1.f, 1.f, 0.f,  0.0f, 0.0f, // D
+     0.5f, -0.5f,  0.5f,    1.f, 1.f, 0.f,  1.0f, 0.0f, // C
+     0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  1.0f, 1.0f, // G
+    -0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  0.0f, 1.0f, // H
 
     // Lewa ściana
-    -0.5f, -0.5f, -0.5f,    1.f, 0.f, 1.f,  1.0f, 0.0f, // A
-    -0.5f, -0.5f,  0.5f,    1.f, 0.f, 1.f,  0.0f, 0.0f, // D
-    -0.5f,  0.5f,  0.5f,    1.f, 0.f, 1.f,  0.0f, 1.0f, // H
-    -0.5f,  0.5f, -0.5f,    1.f, 0.f, 1.f,  1.0f, 1.0f, // E
+    -0.5f, -0.5f, -0.5f,    1.f, 0.f, 1.f,  0.0f, 0.0f, // A
+    -0.5f, -0.5f,  0.5f,    1.f, 0.f, 1.f,  1.0f, 0.0f, // D
+    -0.5f,  0.5f,  0.5f,    1.f, 0.f, 1.f,  1.0f, 1.0f, // H
+    -0.5f,  0.5f, -0.5f,    1.f, 0.f, 1.f,  0.0f, 1.0f, // E
 
     // Górna podstawa
-    -0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,  0.0f, 0.0f, // E
-     0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,  1.0f, 0.0f, // F
-     0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  1.0f, 1.0f, // G
-    -0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  0.0f, 1.0f  // H
+    -0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,  0.0f, 1.0f, // E
+     0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,  1.0f, 1.0f, // F
+     0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  1.0f, 0.0f, // G
+    -0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  0.0f, 0.0f  // H
 };
 
 // Indeksy okreslajace kolejnosc wierzcholkow
@@ -116,10 +95,9 @@ GLuint indices[] = {
     20, 21, 22,  20, 22, 23  // EFG, EGH
 };
 
-int main(){
+int main() {
     // Inicjalizacja GLFW
     glfwInit();
-
 
     // Informujemy GLFW, ze uzywam OpenGL'a w wersji 3.
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -131,7 +109,6 @@ int main(){
 
     // Tworzymy obiekt okna GLFW o wielkosci width x heigth [px], nazwany "SzelkowskiOpenGL"
     GLFWwindow* window = glfwCreateWindow(width, height, "SzelkowskiOpenGL", NULL, NULL);
-    // Sprawdzamy, czy okno poprawnie sie utworzylo 
     if (window == NULL){
         cout << "Failed to create GLFW window" << endl;
         glfwTerminate();
@@ -140,49 +117,46 @@ int main(){
 
     glfwSetKeyCallback(window, key_callback);
 
-
     // Wprowadzamy okno do bieżącego kontekstu
     glfwMakeContextCurrent(window);
 
-    // Ladujemy GLAD, aby skonfigurowal OpenGL'a
+    // Ladujemy GLAD
     if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
 
-    // Okreslamy obszar widoku OpenGL'a w oknie
-    // W tym przypadku (x, y) = ([0, width], [0, height])
     glViewport(0, 0, width, height);
 
-    // Tworzymy obiekt shaderProgram typu Shader uzywajac shaderow z Recource Files\Shaders
+    // Tworzymy shader program
     Shader shaderProgram("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Shaders\\default.vert", 
                          "C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Shaders\\default.frag");
 
-
-    // Tworzymy Vertex Array Object i go wiazemy
     VAO VAO1;
     VAO1.Bind();
 
-    // Tworzymy Vertex Buffer Object i laczymy go z wierzcholkami
     VBO VBO1(vertices, sizeof(vertices));
-    // Tworzymy Element Buffer Object i laczymy go z indeksami
     EBO EBO1(indices, sizeof(indices));
 
-    // Laczymy VBO z VAO
     VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
-	VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	VAO1.LinkAttrib(VBO1, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    VAO1.LinkAttrib(VBO1, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
-    // Odwiazujemy wszystko, zeby przez przypadek nie zmodyfikowac
     VAO1.Unbind();
     VBO1.Unbind();
     EBO1.Unbind();
 
-    Texture chihuahua("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\chihuahua.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
-	chihuahua.texUnit(shaderProgram, "tex0", 0);
+    // Inicjalizujemy tekstury
+    Texture textures[5] = {
+        Texture("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\chihuahua.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE),
+        Texture("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\monalisa.png", GL_TEXTURE_2D, GL_TEXTURE1, GL_RGBA, GL_UNSIGNED_BYTE),
+        Texture("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\shaq.png", GL_TEXTURE_2D, GL_TEXTURE2, GL_RGBA, GL_UNSIGNED_BYTE),
+        Texture("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\cat.png", GL_TEXTURE_2D, GL_TEXTURE3, GL_RGBA, GL_UNSIGNED_BYTE),
+        Texture("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\nice.png", GL_TEXTURE_2D, GL_TEXTURE4, GL_RGBA, GL_UNSIGNED_BYTE)
+    };
 
-    //mat4x4 model, view, proj;
 
+    // Włączamy testowanie głębokości
     glEnable(GL_DEPTH_TEST);
 
     vec3 position = {0.0f, 0.0f, 0.0f};
@@ -190,69 +164,81 @@ int main(){
 
     float FOV = 45.0f;
 
-    // Glowna petla while
-    while(!glfwWindowShouldClose(window)){
-        
-        // Okreslamy kolor tla
+    // Pętla renderująca
+    while (!glfwWindowShouldClose(window)) {
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
-        // Czyscimy bufor tylni i przypisujemy mu nowy kolor
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        // Przekazujemy OpenGL, ktorego programu shaderow chcemy uzyc
+
+        // Aktywuj shader
         shaderProgram.Activate();
 
+        // Zmiana kamery
         camera.Inputs(window);
         camera.Matrix(FOV, 0.1f, 100.0f, shaderProgram, "camMatrix");
 
-        // Obsługa klawiszy Q i E dla zmiany FOV
+        // Zmiana FOV
         if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
-            if (FOV - 0.01f >= 10.0f)   FOV -= 0.01f;
+            if (FOV - 0.01f >= 10.0f) FOV -= 0.01f;
         }
         if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
-            if (FOV + 0.01f <= 120.0f)   FOV += 0.01f;
+            if (FOV + 0.01f <= 120.0f) FOV += 0.01f;
         }
 
-        chihuahua.Bind();
-        // Wiazemy VAO, aby OpenGL wiedzial, ze ma go uzywac
-        VAO1.Bind();
-
-        // Renderowanie 10 sześcianów
-        for (int i = 0; i < 26; i++) {
+        // Renderowanie sześcianów
+        for (int i = 0; i < 5; i++) {
             mat4x4 model;
             mat4x4_identity(model);
-
-            
             mat4x4_translate(model, cubePositions[i][0], cubePositions[i][1], cubePositions[i][2]);
-            mat4x4_rotate(model, model, 0.3f, 0.5f, 0.8f, (float)glfwGetTime());
 
-
-
-            // Przekazanie modelu do shadera
+            // Przekazanie macierzy modelu do shadera
             GLuint modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (const GLfloat*)model);
 
-            // Rysujemy trojkaty
-            glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(int), GL_UNSIGNED_INT, 0);
+            // Aktywowanie odpowiedniej jednostki tekstury
+            glActiveTexture(GL_TEXTURE0 + i); // Aktywuj jednostkę tekstury
+
+            // Wiązanie odpowiedniej tekstury
+            textures[i].Bind();
+
+            // Przypisanie tekstur do uniformów
+            glUniform1i(glGetUniformLocation(shaderProgram.ID, "tex0"), 0);
+            glUniform1i(glGetUniformLocation(shaderProgram.ID, "tex1"), 1);
+            glUniform1i(glGetUniformLocation(shaderProgram.ID, "tex2"), 2);
+            glUniform1i(glGetUniformLocation(shaderProgram.ID, "tex3"), 3);
+            glUniform1i(glGetUniformLocation(shaderProgram.ID, "tex4"), 4);
+
+            // Ustawienie 'type' do wyboru tekstury
+            glUniform1i(glGetUniformLocation(shaderProgram.ID, "type"), i); // 'i' będzie wskazywać, która tekstura ma być użyta
+
+            // Wiązanie VAO
+            VAO1.Bind();
+
+            // Rysowanie sześcianu
+            glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(int), GL_UNSIGNED_INT, 0);
         }
 
-        
 
-        // Zmieniamy bufor tylni z przednim
+
+
+        // Zmieniamy bufor
         glfwSwapBuffers(window);
 
-        // Obslugujemy wszystkie zdarzenia GLFW
+        // Obsługa zdarzeń
         glfwPollEvents();
     }
+
 
     // Usuwamy wszystkie stworzone obiekty
     VAO1.Delete();
     VBO1.Delete();
     EBO1.Delete();
-    chihuahua.Delete();
+    for (int i = 0; i < 5; i++) {
+        textures[i].Delete();
+    }
     shaderProgram.Delete();
-    // Usuwamy okno przed zakonczeniem programu
-    glfwDestroyWindow(window);
 
-    // Zwalniamy zasoby GLFW przed zakonczeniem programu
+    glfwDestroyWindow(window);
     glfwTerminate();
+
     return 0;
 }
