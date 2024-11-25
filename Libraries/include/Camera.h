@@ -12,7 +12,8 @@ class Camera{
         vec3 Position;
         vec3 Orientation = {0.0f, 0.0f, -1.0f};
         vec3 Up = {0.0f, 1.0f, 0.0f};
-        mat4x4 cameraMatrix;
+        mat4x4 crntView;
+        mat4x4 crntProj;
         bool firstClick = true;
 
         int width;
@@ -25,7 +26,7 @@ class Camera{
 
         void updateMatrix(float FOVdeg, float nearPlane, float farPlane);
 
-        void Matrix(Shader& shader, const char* unifrom);
+        void Matrix(Shader& shader);
 
         void Inputs(GLFWwindow* window);
 };

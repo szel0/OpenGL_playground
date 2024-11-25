@@ -7,12 +7,7 @@ in vec2 texCoord;    // współrzędne tekstury z wierzchołków
 in vec3 Normal;
 in vec3 crntPos;
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform sampler2D tex2;
-uniform sampler2D tex3;
-uniform sampler2D tex4;
-
+uniform sampler2D textures[5];
 uniform int type;
 
 
@@ -42,19 +37,5 @@ void main()
 	float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.0f), 8);
 	float specular = specAmount * specularLight;
 
-	if (type == 0) {
-		FragColor = texture(tex0, texCoord) * lightColor * (diffuse + ambient + specular);
-	}
-	if (type == 1) {
-		FragColor = texture(tex1, texCoord) * lightColor * (diffuse + ambient + specular);
-	}
-	if (type == 2) {
-		FragColor = texture(tex2, texCoord) * lightColor * (diffuse + ambient + specular);
-	}
-	if (type == 3) {
-		FragColor = texture(tex3, texCoord) * lightColor * (diffuse + ambient + specular);
-	}
-	if (type == 4) {
-		FragColor = texture(tex4, texCoord) * lightColor * (diffuse + ambient + specular);
-	}
+	FragColor = texture(textures[type], texCoord) * lightColor * (diffuse + ambient + specular);
 }

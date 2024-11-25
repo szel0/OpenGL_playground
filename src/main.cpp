@@ -192,7 +192,7 @@ int main() {
     lightVBO.Unbind();
     lightEBO.Unbind();
 
-    vec4 lightColor = {1.0f, 0.7f, 0.3f, 1.0f};
+    vec4 lightColor = {1.0f, 1.0f, 1.0f, 1.0f};
 
     vec3 lightPos = {2.0f, 2.0f, 0.0f};
     mat4x4 lightModel;
@@ -217,6 +217,11 @@ int main() {
         Texture("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\nice.png", GL_TEXTURE_2D, GL_TEXTURE4, GL_RGBA, GL_UNSIGNED_BYTE)
     };
 
+    // Przypisanie tekstur do uniformów jednorazowo
+    GLuint textureLoc = glGetUniformLocation(shaderProgram.ID, "textures");
+    int textureIndices[5] = {0, 1, 2, 3, 4};
+    glUniform1iv(textureLoc, 5, textureIndices);
+
 
     // Włączamy testowanie głębokości
     glEnable(GL_DEPTH_TEST);
@@ -239,7 +244,7 @@ int main() {
         // Zmiana kamery
         camera.Inputs(window);
         camera.updateMatrix(FOV, 0.1f, 100.0f);
-        camera.Matrix(shaderProgram, "camMatrix");
+        camera.Matrix(shaderProgram);
 
         // Zmiana FOV
         if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
@@ -265,13 +270,6 @@ int main() {
             // Wiązanie odpowiedniej tekstury
             textures[i].Bind();
 
-            // Przypisanie tekstur do uniformów
-            glUniform1i(glGetUniformLocation(shaderProgram.ID, "tex0"), 0);
-            glUniform1i(glGetUniformLocation(shaderProgram.ID, "tex1"), 1);
-            glUniform1i(glGetUniformLocation(shaderProgram.ID, "tex2"), 2);
-            glUniform1i(glGetUniformLocation(shaderProgram.ID, "tex3"), 3);
-            glUniform1i(glGetUniformLocation(shaderProgram.ID, "tex4"), 4);
-
             // Ustawienie 'type' do wyboru tekstury
             glUniform1i(glGetUniformLocation(shaderProgram.ID, "type"), i); // 'i' będzie wskazywać, która tekstura ma być użyta
 
@@ -283,7 +281,7 @@ int main() {
         }
 
         lightShader.Activate();
-        camera.Matrix(lightShader, "camMatrix");
+        camera.Matrix(lightShader);
         lightVAO.Bind();
         glDrawElements(GL_TRIANGLES, sizeof(lightIndices) / sizeof(int), GL_UNSIGNED_INT, 0);
 

@@ -8,7 +8,8 @@ Camera::Camera(int width, int height, vec3 position){
     Position[0] = position[0];
     Position[1] = position[1];
     Position[2] = position[2];
-    mat4x4_identity(cameraMatrix);
+    mat4x4_identity(crntView);
+    mat4x4_identity(crntProj);
 }
 
 void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane){
@@ -22,11 +23,13 @@ void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane){
     mat4x4_look_at(view, Position, Center, Up);
     mat4x4_perspective(proj, FOVdeg * M_PI / 180.0f, float(width/height), nearPlane, farPlane);
 
-    mat4x4_mul(cameraMatrix, proj, view);
+    mat4x4_dup(crntView, view);
+    mat4x4_dup(crntProj, proj);
 }
 
-void Camera::Matrix(Shader& shader, const char* uniform){
-    glUniformMatrix4fv(glGetUniformLocation(shader.ID, uniform), 1, GL_FALSE, (const GLfloat*) cameraMatrix);
+void Camera::Matrix(Shader& shader){
+    glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, (const GLfloat*) crntView);
+    glUniformMatrix4fv(glGetUniformLocation(shader.ID, "proj"), 1, GL_FALSE, (const GLfloat*) crntProj);
 }
 
 

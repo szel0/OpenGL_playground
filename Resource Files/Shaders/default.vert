@@ -20,8 +20,9 @@ out vec3 crntPos;
 
 
 // Imports the camera matrix from the main function
-uniform mat4x4 camMatrix;
-uniform mat4x4 model;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 proj;
 
 
 void main()
@@ -29,7 +30,7 @@ void main()
 	crntPos = vec3(model * vec4(aPos, 1.0f));
 
 	// Outputs the positions/coordinates of all vertices
-	gl_Position = camMatrix * vec4(crntPos, 1.0);
+	gl_Position = proj * view * vec4(crntPos, 1.0);
 	// Assigns the colors from the Vertex Data to "color"
 	color = aColor;
 	// Assigns the texture coordinates from the Vertex Data to "texCoord"
