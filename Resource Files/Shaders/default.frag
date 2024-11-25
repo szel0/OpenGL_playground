@@ -4,39 +4,47 @@ out vec4 FragColor;
 
 in vec3 color;       // kolor z wierzchołków
 in vec2 texCoord;    // współrzędne tekstury z wierzchołków
-in vec3 Normal;
-in vec3 crntPos;
+in vec3 vNormal;
+in vec3 vLight;
+
 
 uniform sampler2D textures[5];
-
 uniform int type;
+uniform int shaderType;
 
 
 uniform vec4 lightColor;
 
-uniform vec3 lightPos;
+const vec4 Ka = vec4(0.1, 0.1, 0.1, 1.0);
+const vec4 Kd = vec4(1.0, 1.0, 1.0, 1.0);
 
-uniform vec3 camPos;
+
 
 void main()
 {
-	// ambient lighting
-	float ambient = 0.20f;
+	vec3 vNormal_norm = normalize(vNormal);
+	vec3 vLight_norm = normalize(vLight);
 
-	float distance = length(lightPos - crntPos); // odległość między źródłem światła a obiektem
-	float attenuation = 1.0 / (distance * distance); // lub jakaś inna funkcja wygładzająca
 
-	// diffuse lighting
-	vec3 normal = normalize(Normal);
-	vec3 lightDirection = normalize(lightPos - crntPos);
-	float diffuse = max(dot(normal, lightDirection), 0.0f) * attenuation;
+	float diff = clamp(dot(vNormal_norm, vLight_norm), 0.0, 1.0);
 
-	// specular lighting
-	float specularLight = 0.50f;
-	vec3 viewDirection = normalize(camPos - crntPos);
-	vec3 reflectionDirection = reflect(-lightDirection, normal);
-	float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.0f), 8);
-	float specular = specAmount * specularLight;
-
-	FragColor = texture(textures[type], texCoord) * lightColor * (diffuse + ambient + specular);
+	switch (shaderType) {
+		case 0:
+			FragColor = texture(textures[type], texCoord) * Ka + texture(textures[type], texCoord) * Kd * diff * lightColor;
+			break;
+		case 1:
+			FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+			break;
+		case 2:
+			FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+			break;
+		case 3:
+			FragColor = texture(textures[type], texCoord);
+			break;
+		case 4:
+			FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+			break;
+		default:
+			FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+	}	
 }

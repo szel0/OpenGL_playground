@@ -10,24 +10,26 @@ out vec3 color;
 out vec2 texCoord;
 
 
-out vec3 Normal;
-out vec3 crntPos;
+out vec3 vNormal;
+out vec3 vLight;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 proj;
 
+uniform vec3 lightPos;
+
+
 
 void main()
 {
-	crntPos = vec3(model * vec4(aPos, 1.0f));
+	gl_Position = proj * view * model * vec4(aPos, 1.0);
 
-
-	gl_Position = proj * view * vec4(crntPos, 1.0);
+	vNormal = aNormal;
+	
+	vec3 crntPos = vec3(model * vec4(aPos, 1.0f));
+	vLight = lightPos.xyz - crntPos.xyz;
 
 	color = aColor;
-
 	texCoord = aTex;
-
-	Normal = aNormal;
 }

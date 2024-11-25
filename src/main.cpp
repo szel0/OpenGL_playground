@@ -18,11 +18,22 @@ using namespace std;
 
 const unsigned int width = 800;
 const unsigned int height = 800;
+vec3 lightPos = {2.0f, 2.0f, 0.0f};
+
+bool ifCamera = true;
+
+int shaderType = 0;
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
+        glfwSetWindowShouldClose(window, GLFW_TRUE);   
+    if (key == GLFW_KEY_L && action == GLFW_PRESS)
+        ifCamera = !ifCamera; 
+    if (key == GLFW_KEY_P && action == GLFW_PRESS) {
+        shaderType += 1;
+        shaderType %= 5;
+    }
 }
 
 // Tablica z pozycjami sześcianów
@@ -194,18 +205,16 @@ int main() {
 
     vec4 lightColor = {1.0f, 1.0f, 1.0f, 1.0f};
 
-    vec3 lightPos = {2.0f, 2.0f, 0.0f};
-    mat4x4 lightModel;
-    mat4x4_identity(lightModel);
-    mat4x4_translate(lightModel, lightPos[0], lightPos[1], lightPos[2]);
+
+
 
     lightShader.Activate();
-    glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, (const GLfloat*)lightModel);
+
     glUniform4f(glGetUniformLocation(lightShader.ID, "lightColor"), lightColor[0], lightColor[1], lightColor[2], lightColor[3]);
 
     shaderProgram.Activate();
     glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor[0], lightColor[1], lightColor[2], lightColor[3]);
-    glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos[0], lightPos[1], lightPos[2]);
+
 
 
     // Inicjalizujemy tekstury
@@ -236,22 +245,46 @@ int main() {
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        mat4x4 lightModel;
+        mat4x4_identity(lightModel);
+        mat4x4_translate(lightModel, lightPos[0], lightPos[1], lightPos[2]);
+
+
+        lightShader.Activate();
+        glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, (const GLfloat*)lightModel);
+
         // Aktywuj shader
         shaderProgram.Activate();
+        glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos[0], lightPos[1], lightPos[2]);
+        glUniform1i(glGetUniformLocation(shaderProgram.ID, "shaderType"), shaderType);
 
-        glUniform3f(glGetUniformLocation(shaderProgram.ID, "camPos"), camera.Position[0], camera.Position[1], camera.Position[2]);
 
-        // Zmiana kamery
-        camera.Inputs(window);
-        camera.updateMatrix(FOV, 0.1f, 100.0f);
-        camera.Matrix(shaderProgram);
 
-        // Zmiana FOV
-        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
-            if (FOV - 0.01f >= 10.0f) FOV -= 0.01f;
-        }
-        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
-            if (FOV + 0.01f <= 120.0f) FOV += 0.01f;
+        if (ifCamera){
+            // Zmiana FOV
+            if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) 
+                if (FOV - 0.01f >= 10.0f) FOV -= 0.01f;
+            if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) 
+                if (FOV + 0.01f <= 120.0f) FOV += 0.01f;
+
+            // Zmiana kamery
+            camera.Inputs(window);
+            camera.updateMatrix(FOV, 0.1f, 100.0f);
+            camera.Matrix(shaderProgram);
+        } else { 
+            // Zmiana pozycji swiatla
+            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+                lightPos[2] -= 0.0003f;
+            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+                lightPos[2] += 0.0003f;
+            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+                lightPos[0] -= 0.0003f;
+            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+                lightPos[0] += 0.0003f;
+            if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+                lightPos[1] += 0.0003f;
+            if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
+                lightPos[1] -= 0.0003f;  
         }
 
         // Renderowanie sześcianów
