@@ -26,52 +26,53 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 }
 
 // Tablica z pozycjami sześcianów
-vec3 cubePositions[26] = {
-    {0.0f, 0.0f, 0.0f},
-    {-1.0f, 0.0f, 0.0f},
-    {1.0f, 0.0f, 0.0f},
-    {-0.5f, 1.0f, 0.0f},
-    {0.5f, 1.0f, 0.0f}, 
+vec3 cubePositions[5] = {
+    { 1.0f,  1.0f,  0.0f}, 
+    { 2.5f,  1.0f,  0.5f},
+    { 1.5f,  2.5f, -1.5f}, 
+    { 1.5f,  3.5f,  1.0f}, 
+    { 3.0f,  3.0f,  0.0f}
 };
 
 
 // Koordynaty wierzcholkow
 GLfloat vertices[] = {
+    //    coordinates           COLOR           texCoords           vertex normals
 	// Dolna podstawa
-    -0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,  1.0f, 0.0f, // A
-     0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,  0.0f, 0.0f, // B
-     0.5f, -0.5f,  0.5f,    1.f, 0.f, 0.f,  0.0f, 1.0f, // C
-    -0.5f, -0.5f,  0.5f,    1.f, 0.f, 0.f,  1.0f, 1.0f, // D
+    -0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,    1.0f, 0.0f,    -0.577f, -0.577f,  0.577f,  // A
+     0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,    0.0f, 0.0f,     0.577f, -0.577f,  0.577f,  // B
+     0.5f, -0.5f,  0.5f,    1.f, 0.f, 0.f,    0.0f, 1.0f,     0.577f, -0.577f, -0.577f,  // C
+    -0.5f, -0.5f,  0.5f,    1.f, 0.f, 0.f,    1.0f, 1.0f,    -0.577f, -0.577f, -0.577f,  // D
 
     // Przednia ściana
-    -0.5f, -0.5f, -0.5f,    0.f, 1.f, 0.f,  1.0f, 0.0f, // A
-     0.5f, -0.5f, -0.5f,    0.f, 1.f, 0.f,  0.0f, 0.0f, // B
-     0.5f,  0.5f, -0.5f,    0.f, 1.f, 0.f,  0.0f, 1.0f, // F
-    -0.5f,  0.5f, -0.5f,    0.f, 1.f, 0.f,  1.0f, 1.0f, // E
+    -0.5f, -0.5f, -0.5f,    0.f, 1.f, 0.f,    1.0f, 0.0f,    -0.577f, -0.577f,  0.577f,  // A
+     0.5f, -0.5f, -0.5f,    0.f, 1.f, 0.f,    0.0f, 0.0f,     0.577f, -0.577f,  0.577f,  // B
+     0.5f,  0.5f, -0.5f,    0.f, 1.f, 0.f,    0.0f, 1.0f,     0.577f,  0.577f,  0.577f,  // F
+    -0.5f,  0.5f, -0.5f,    0.f, 1.f, 0.f,    1.0f, 1.0f,    -0.577f,  0.577f,  0.577f,  // E
 
     // Prawa ściana
-     0.5f, -0.5f, -0.5f,    0.f, 0.f, 1.f,  1.0f, 0.0f, // B
-     0.5f, -0.5f,  0.5f,    0.f, 0.f, 1.f,  0.0f, 0.0f, // C
-     0.5f,  0.5f,  0.5f,    0.f, 0.f, 1.f,  0.0f, 1.0f, // G
-     0.5f,  0.5f, -0.5f,    0.f, 0.f, 1.f,  1.0f, 1.0f, // F
+     0.5f, -0.5f, -0.5f,    0.f, 0.f, 1.f,    1.0f, 0.0f,     0.577f, -0.577f,  0.577f,  // B
+     0.5f, -0.5f,  0.5f,    0.f, 0.f, 1.f,    0.0f, 0.0f,     0.577f, -0.577f, -0.577f,  // C
+     0.5f,  0.5f,  0.5f,    0.f, 0.f, 1.f,    0.0f, 1.0f,     0.577f,  0.577f, -0.577f,  // G
+     0.5f,  0.5f, -0.5f,    0.f, 0.f, 1.f,    1.0f, 1.0f,     0.577f,  0.577f,  0.577f,  // F
 
     // Tylna ściana
-    -0.5f, -0.5f,  0.5f,    1.f, 1.f, 0.f,  0.0f, 0.0f, // D
-     0.5f, -0.5f,  0.5f,    1.f, 1.f, 0.f,  1.0f, 0.0f, // C
-     0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  1.0f, 1.0f, // G
-    -0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  0.0f, 1.0f, // H
+    -0.5f, -0.5f,  0.5f,    1.f, 1.f, 0.f,    0.0f, 0.0f,    -0.577f, -0.577f, -0.577f,  // D
+     0.5f, -0.5f,  0.5f,    1.f, 1.f, 0.f,    1.0f, 0.0f,     0.577f, -0.577f, -0.577f,  // C
+     0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,    1.0f, 1.0f,     0.577f,  0.577f, -0.577f,  // G
+    -0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,    0.0f, 1.0f,    -0.577f,  0.577f, -0.577f,  // H
 
     // Lewa ściana
-    -0.5f, -0.5f, -0.5f,    1.f, 0.f, 1.f,  0.0f, 0.0f, // A
-    -0.5f, -0.5f,  0.5f,    1.f, 0.f, 1.f,  1.0f, 0.0f, // D
-    -0.5f,  0.5f,  0.5f,    1.f, 0.f, 1.f,  1.0f, 1.0f, // H
-    -0.5f,  0.5f, -0.5f,    1.f, 0.f, 1.f,  0.0f, 1.0f, // E
+    -0.5f, -0.5f, -0.5f,    1.f, 0.f, 1.f,    0.0f, 0.0f,    -0.577f, -0.577f,  0.577f,  // A
+    -0.5f, -0.5f,  0.5f,    1.f, 0.f, 1.f,    1.0f, 0.0f,    -0.577f, -0.577f, -0.577f,  // D
+    -0.5f,  0.5f,  0.5f,    1.f, 0.f, 1.f,    1.0f, 1.0f,    -0.577f,  0.577f, -0.577f,  // H
+    -0.5f,  0.5f, -0.5f,    1.f, 0.f, 1.f,    0.0f, 1.0f,    -0.577f,  0.577f,  0.577f,  // E
 
     // Górna podstawa
-    -0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,  0.0f, 1.0f, // E
-     0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,  1.0f, 1.0f, // F
-     0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  1.0f, 0.0f, // G
-    -0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,  0.0f, 0.0f  // H
+    -0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,    0.0f, 1.0f,    -0.577f,  0.577f,  0.577f,  // E
+     0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,    1.0f, 1.0f,     0.577f,  0.577f,  0.577f,  // F
+     0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,    1.0f, 0.0f,     0.577f,  0.577f, -0.577f,  // G
+    -0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,    0.0f, 0.0f,    -0.577f,  0.577f, -0.577f,  // H
 };
 
 // Indeksy okreslajace kolejnosc wierzcholkow
@@ -94,6 +95,35 @@ GLuint indices[] = {
     // Górna podstawa
     20, 21, 22,  20, 22, 23  // EFG, EGH
 };
+
+GLfloat lightVertices[] =
+{ //     COORDINATES     //
+	-0.1f, -0.1f,  0.1f,
+	-0.1f, -0.1f, -0.1f,
+	 0.1f, -0.1f, -0.1f,
+	 0.1f, -0.1f,  0.1f,
+	-0.1f,  0.1f,  0.1f,
+	-0.1f,  0.1f, -0.1f,
+	 0.1f,  0.1f, -0.1f,
+	 0.1f,  0.1f,  0.1f
+};
+
+GLuint lightIndices[] =
+{
+	0, 1, 2,
+	0, 2, 3,
+	0, 4, 7,
+	0, 7, 3,
+	3, 7, 6,
+	3, 6, 2,
+	2, 6, 5,
+	2, 5, 1,
+	1, 5, 4,
+	1, 4, 0,
+	4, 5, 6,
+	4, 6, 7
+};
+
 
 int main() {
     // Inicjalizacja GLFW
@@ -138,13 +168,45 @@ int main() {
     VBO VBO1(vertices, sizeof(vertices));
     EBO EBO1(indices, sizeof(indices));
 
-    VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
-    VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    VAO1.LinkAttrib(VBO1, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 11 * sizeof(float), (void*)0);
+    VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 11 * sizeof(float), (void*)(3 * sizeof(float)));
+    VAO1.LinkAttrib(VBO1, 2, 2, GL_FLOAT, 11 * sizeof(float), (void*)(6 * sizeof(float)));
+    VAO1.LinkAttrib(VBO1, 3, 3, GL_FLOAT, 11 * sizeof(float), (void*)(8 * sizeof(float)));
 
     VAO1.Unbind();
     VBO1.Unbind();
     EBO1.Unbind();
+
+    Shader lightShader("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Shaders\\light.vert", 
+                         "C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Shaders\\light.frag");
+
+    VAO lightVAO;
+    lightVAO.Bind();
+
+    VBO lightVBO(lightVertices, sizeof(lightVertices));
+    EBO lightEBO(lightIndices, sizeof(lightIndices));
+
+    lightVAO.LinkAttrib(lightVBO, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
+
+    lightVAO.Unbind();
+    lightVBO.Unbind();
+    lightEBO.Unbind();
+
+    vec4 lightColor = {1.0f, 0.7f, 0.3f, 1.0f};
+
+    vec3 lightPos = {2.0f, 2.0f, 0.0f};
+    mat4x4 lightModel;
+    mat4x4_identity(lightModel);
+    mat4x4_translate(lightModel, lightPos[0], lightPos[1], lightPos[2]);
+
+    lightShader.Activate();
+    glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, (const GLfloat*)lightModel);
+    glUniform4f(glGetUniformLocation(lightShader.ID, "lightColor"), lightColor[0], lightColor[1], lightColor[2], lightColor[3]);
+
+    shaderProgram.Activate();
+    glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor[0], lightColor[1], lightColor[2], lightColor[3]);
+    glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos[0], lightPos[1], lightPos[2]);
+
 
     // Inicjalizujemy tekstury
     Texture textures[5] = {
@@ -159,7 +221,7 @@ int main() {
     // Włączamy testowanie głębokości
     glEnable(GL_DEPTH_TEST);
 
-    vec3 position = {0.0f, 0.0f, 0.0f};
+    vec3 position = {2.0f, 2.0f, 5.0f};
     Camera camera(width, height, position);
 
     float FOV = 45.0f;
@@ -172,9 +234,12 @@ int main() {
         // Aktywuj shader
         shaderProgram.Activate();
 
+        glUniform3f(glGetUniformLocation(shaderProgram.ID, "camPos"), camera.Position[0], camera.Position[1], camera.Position[2]);
+
         // Zmiana kamery
         camera.Inputs(window);
-        camera.Matrix(FOV, 0.1f, 100.0f, shaderProgram, "camMatrix");
+        camera.updateMatrix(FOV, 0.1f, 100.0f);
+        camera.Matrix(shaderProgram, "camMatrix");
 
         // Zmiana FOV
         if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
@@ -217,8 +282,10 @@ int main() {
             glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(int), GL_UNSIGNED_INT, 0);
         }
 
-
-
+        lightShader.Activate();
+        camera.Matrix(lightShader, "camMatrix");
+        lightVAO.Bind();
+        glDrawElements(GL_TRIANGLES, sizeof(lightIndices) / sizeof(int), GL_UNSIGNED_INT, 0);
 
         // Zmieniamy bufor
         glfwSwapBuffers(window);
