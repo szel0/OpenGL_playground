@@ -39,40 +39,40 @@ vec3 cubePositions[5] = {
 GLfloat vertices[] = {
     //    coordinates           COLOR           texCoords           vertex normals
 	// Dolna podstawa
-    -0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,    1.0f, 0.0f,    -0.577f, -0.577f,  0.577f,  // A
-     0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,    0.0f, 0.0f,     0.577f, -0.577f,  0.577f,  // B
-     0.5f, -0.5f,  0.5f,    1.f, 0.f, 0.f,    0.0f, 1.0f,     0.577f, -0.577f, -0.577f,  // C
-    -0.5f, -0.5f,  0.5f,    1.f, 0.f, 0.f,    1.0f, 1.0f,    -0.577f, -0.577f, -0.577f,  // D
+    -0.5f, -0.5f,  0.5f,    1.f, 0.f, 0.f,    0.0f, 0.0f,    -0.577f, -0.577f,  0.577f,  // A
+     0.5f, -0.5f,  0.5f,    1.f, 0.f, 0.f,    1.0f, 0.0f,     0.577f, -0.577f,  0.577f,  // B
+     0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,    1.0f, 1.0f,     0.577f, -0.577f, -0.577f,  // C
+    -0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,    0.0f, 1.0f,    -0.577f, -0.577f, -0.577f,  // D
 
     // Przednia ściana
-    -0.5f, -0.5f, -0.5f,    0.f, 1.f, 0.f,    1.0f, 0.0f,    -0.577f, -0.577f,  0.577f,  // A
-     0.5f, -0.5f, -0.5f,    0.f, 1.f, 0.f,    0.0f, 0.0f,     0.577f, -0.577f,  0.577f,  // B
-     0.5f,  0.5f, -0.5f,    0.f, 1.f, 0.f,    0.0f, 1.0f,     0.577f,  0.577f,  0.577f,  // F
-    -0.5f,  0.5f, -0.5f,    0.f, 1.f, 0.f,    1.0f, 1.0f,    -0.577f,  0.577f,  0.577f,  // E
+    -0.5f, -0.5f,  0.5f,    0.f, 1.f, 0.f,    0.0f, 0.0f,    -0.577f, -0.577f,  0.577f,  // A
+     0.5f, -0.5f,  0.5f,    0.f, 1.f, 0.f,    1.0f, 0.0f,     0.577f, -0.577f,  0.577f,  // B
+     0.5f,  0.5f,  0.5f,    0.f, 1.f, 0.f,    1.0f, 1.0f,     0.577f,  0.577f,  0.577f,  // F
+    -0.5f,  0.5f,  0.5f,    0.f, 1.f, 0.f,    0.0f, 1.0f,    -0.577f,  0.577f,  0.577f,  // E
 
     // Prawa ściana
-     0.5f, -0.5f, -0.5f,    0.f, 0.f, 1.f,    1.0f, 0.0f,     0.577f, -0.577f,  0.577f,  // B
-     0.5f, -0.5f,  0.5f,    0.f, 0.f, 1.f,    0.0f, 0.0f,     0.577f, -0.577f, -0.577f,  // C
-     0.5f,  0.5f,  0.5f,    0.f, 0.f, 1.f,    0.0f, 1.0f,     0.577f,  0.577f, -0.577f,  // G
-     0.5f,  0.5f, -0.5f,    0.f, 0.f, 1.f,    1.0f, 1.0f,     0.577f,  0.577f,  0.577f,  // F
+     0.5f, -0.5f,  0.5f,    0.f, 0.f, 1.f,    0.0f, 0.0f,     0.577f, -0.577f,  0.577f,  // B
+     0.5f, -0.5f, -0.5f,    0.f, 0.f, 1.f,    1.0f, 0.0f,     0.577f, -0.577f, -0.577f,  // C
+     0.5f,  0.5f, -0.5f,    0.f, 0.f, 1.f,    1.0f, 1.0f,     0.577f,  0.577f, -0.577f,  // G
+     0.5f,  0.5f,  0.5f,    0.f, 0.f, 1.f,    0.0f, 1.0f,     0.577f,  0.577f,  0.577f,  // F
 
     // Tylna ściana
-    -0.5f, -0.5f,  0.5f,    1.f, 1.f, 0.f,    0.0f, 0.0f,    -0.577f, -0.577f, -0.577f,  // D
-     0.5f, -0.5f,  0.5f,    1.f, 1.f, 0.f,    1.0f, 0.0f,     0.577f, -0.577f, -0.577f,  // C
-     0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,    1.0f, 1.0f,     0.577f,  0.577f, -0.577f,  // G
-    -0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,    0.0f, 1.0f,    -0.577f,  0.577f, -0.577f,  // H
+    -0.5f, -0.5f, -0.5f,    1.f, 1.f, 0.f,    1.0f, 0.0f,    -0.577f, -0.577f, -0.577f,  // D
+     0.5f, -0.5f, -0.5f,    1.f, 1.f, 0.f,    0.0f, 0.0f,     0.577f, -0.577f, -0.577f,  // C
+     0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,    0.0f, 1.0f,     0.577f,  0.577f, -0.577f,  // G
+    -0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,    1.0f, 1.0f,    -0.577f,  0.577f, -0.577f,  // H
 
     // Lewa ściana
-    -0.5f, -0.5f, -0.5f,    1.f, 0.f, 1.f,    0.0f, 0.0f,    -0.577f, -0.577f,  0.577f,  // A
-    -0.5f, -0.5f,  0.5f,    1.f, 0.f, 1.f,    1.0f, 0.0f,    -0.577f, -0.577f, -0.577f,  // D
-    -0.5f,  0.5f,  0.5f,    1.f, 0.f, 1.f,    1.0f, 1.0f,    -0.577f,  0.577f, -0.577f,  // H
-    -0.5f,  0.5f, -0.5f,    1.f, 0.f, 1.f,    0.0f, 1.0f,    -0.577f,  0.577f,  0.577f,  // E
+    -0.5f, -0.5f,  0.5f,    1.f, 0.f, 1.f,    1.0f, 0.0f,    -0.577f, -0.577f,  0.577f,  // A
+    -0.5f, -0.5f, -0.5f,    1.f, 0.f, 1.f,    0.0f, 0.0f,    -0.577f, -0.577f, -0.577f,  // D
+    -0.5f,  0.5f, -0.5f,    1.f, 0.f, 1.f,    0.0f, 1.0f,    -0.577f,  0.577f, -0.577f,  // H
+    -0.5f,  0.5f,  0.5f,    1.f, 0.f, 1.f,    1.0f, 1.0f,    -0.577f,  0.577f,  0.577f,  // E
 
     // Górna podstawa
-    -0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,    0.0f, 1.0f,    -0.577f,  0.577f,  0.577f,  // E
-     0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,    1.0f, 1.0f,     0.577f,  0.577f,  0.577f,  // F
-     0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,    1.0f, 0.0f,     0.577f,  0.577f, -0.577f,  // G
-    -0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,    0.0f, 0.0f,    -0.577f,  0.577f, -0.577f,  // H
+    -0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,    1.0f, 1.0f,    -0.577f,  0.577f,  0.577f,  // E
+     0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,    0.0f, 1.0f,     0.577f,  0.577f,  0.577f,  // F
+     0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,    0.0f, 0.0f,     0.577f,  0.577f, -0.577f,  // G
+    -0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,    1.0f, 0.0f,    -0.577f,  0.577f, -0.577f,  // H
 };
 
 // Indeksy okreslajace kolejnosc wierzcholkow
@@ -212,9 +212,9 @@ int main() {
     Texture textures[5] = {
         Texture("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\chihuahua.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE),
         Texture("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\monalisa.png", GL_TEXTURE_2D, GL_TEXTURE1, GL_RGBA, GL_UNSIGNED_BYTE),
-        Texture("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\shaq.png", GL_TEXTURE_2D, GL_TEXTURE2, GL_RGBA, GL_UNSIGNED_BYTE),
+        Texture("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\nice.png", GL_TEXTURE_2D, GL_TEXTURE2, GL_RGBA, GL_UNSIGNED_BYTE),
         Texture("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\cat.png", GL_TEXTURE_2D, GL_TEXTURE3, GL_RGBA, GL_UNSIGNED_BYTE),
-        Texture("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\nice.png", GL_TEXTURE_2D, GL_TEXTURE4, GL_RGBA, GL_UNSIGNED_BYTE)
+        Texture("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\shaq.png", GL_TEXTURE_2D, GL_TEXTURE4, GL_RGBA, GL_UNSIGNED_BYTE)
     };
 
     // Przypisanie tekstur do uniformów jednorazowo

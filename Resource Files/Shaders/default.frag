@@ -8,6 +8,7 @@ in vec3 Normal;
 in vec3 crntPos;
 
 uniform sampler2D textures[5];
+
 uniform int type;
 
 
