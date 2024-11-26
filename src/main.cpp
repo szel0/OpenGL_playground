@@ -30,9 +30,9 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GLFW_TRUE);   
     if (key == GLFW_KEY_L && action == GLFW_PRESS)
         ifCamera = !ifCamera; 
-    if (key == GLFW_KEY_P && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_T && action == GLFW_PRESS) {
         shaderType += 1;
-        shaderType %= 5;
+        shaderType %= 4;
     }
 }
 
@@ -206,8 +206,6 @@ int main() {
     vec4 lightColor = {1.0f, 1.0f, 1.0f, 1.0f};
 
 
-
-
     lightShader.Activate();
 
     glUniform4f(glGetUniformLocation(lightShader.ID, "lightColor"), lightColor[0], lightColor[1], lightColor[2], lightColor[3]);
@@ -257,7 +255,13 @@ int main() {
         shaderProgram.Activate();
         glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos[0], lightPos[1], lightPos[2]);
         glUniform1i(glGetUniformLocation(shaderProgram.ID, "shaderType"), shaderType);
+        glUniform3f(glGetUniformLocation(shaderProgram.ID, "camPos"), camera.Position[0], camera.Position[1], camera.Position[2]);
 
+
+        // Wektor pomocniczy do ruchu po plaszcznie X kamery
+        vec3 right;
+        vec3_mul_cross(right, camera.Orientation, camera.Up);
+        vec3_norm(right, right);
 
 
         if (ifCamera){
@@ -272,18 +276,30 @@ int main() {
             camera.updateMatrix(FOV, 0.1f, 100.0f);
             camera.Matrix(shaderProgram);
         } else { 
-            // Zmiana pozycji swiatla
-            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-                lightPos[2] -= 0.0003f;
-            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-                lightPos[2] += 0.0003f;
-            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-                lightPos[0] -= 0.0003f;
-            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-                lightPos[0] += 0.0003f;
+            // Zmiana pozycji światła
+            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+                vec3 temp;
+                vec3_scale(temp, camera.Orientation, 0.0003f); // Ruch do przodu
+                vec3_add(lightPos, lightPos, temp);
+            }
+            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+                vec3 temp;
+                vec3_scale(temp, camera.Orientation, -0.0003f); // Ruch do tyłu
+                vec3_add(lightPos, lightPos, temp);
+            }
+            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+                vec3 temp;
+                vec3_scale(temp, right, -0.0003f); // Ruch w lewo
+                vec3_add(lightPos, lightPos, temp);
+            }
+            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+                vec3 temp;
+                vec3_scale(temp, right, 0.0003f); // Ruch w prawo
+                vec3_add(lightPos, lightPos, temp);
+            }
             if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
                 lightPos[1] += 0.0003f;
-            if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
+            if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
                 lightPos[1] -= 0.0003f;  
         }
 
