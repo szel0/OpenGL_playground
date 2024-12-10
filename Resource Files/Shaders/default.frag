@@ -9,8 +9,7 @@ in vec3 vLight;
 in vec3 vEye;
 
 
-uniform sampler2D textures[5];
-uniform int type;
+uniform sampler2D tex0;
 
 
 uniform vec4 lightColor;
@@ -29,5 +28,5 @@ void main()
 	float diff = clamp(dot(vNormal_norm, vLight_norm), 0.0, 1.0 - ambient);
 
 
-	FragColor = texture(textures[type], texCoord) * (spec + diff + ambient) * lightColor;
+	FragColor = texture(tex0, texCoord) * (spec + diff + ambient) * lightColor;
 }

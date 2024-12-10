@@ -22,6 +22,7 @@
                 "${workspaceFolder}/src/stb.cpp",
                 "${workspaceFolder}/src/Texture.cpp",
                 "${workspaceFolder}/src/Camera.cpp",
+                "${workspaceFolder}/src/Mesh.cpp",
                 "-lglfw3",  // Biblioteka glfw3
                 "-o", "${workspaceFolder}/app.exe",  // Ścieżka do wyjściowego exe
                 "-lgdi32",  // Dodanie biblioteki GDI32

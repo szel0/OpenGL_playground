@@ -1,18 +1,19 @@
 #define _USE_MATH_DEFINES
 
 #include <iostream>
-#include <glad/gl.h>
-#include <GLFW/glfw3.h>
-//#include <math.h>
-#include <stb/stb_image.h>
+#include "Mesh.h"
+// #include <glad/gl.h>
+// #include <GLFW/glfw3.h>
+// //#include <math.h>
+// #include <stb/stb_image.h>
 
-#include "linmath.h"
-#include "Texture.h"
-#include "shaderClass.h"
-#include "VBO.h"
-#include "EBO.h"
-#include "VAO.h"
-#include "Camera.h"
+// #include "linmath.h"
+// #include "Texture.h"
+// #include "shaderClass.h"
+// #include "VBO.h"
+// #include "EBO.h"
+// #include "VAO.h"
+// #include "Camera.h"
 
 using namespace std;
 
@@ -22,69 +23,57 @@ vec3 lightPos = {2.0f, 2.0f, 0.0f};
 
 bool ifCamera = true;
 
-int shaderType = 0;
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);   
     if (key == GLFW_KEY_L && action == GLFW_PRESS)
-        ifCamera = !ifCamera; 
-    if (key == GLFW_KEY_T && action == GLFW_PRESS) {
-        shaderType += 1;
-        shaderType %= 4;
-    }
+        ifCamera = !ifCamera;
 }
-
-// Tablica z pozycjami sześcianów
-vec3 cubePositions[5] = {
-    { 1.0f,  1.0f,  0.0f}, 
-    { 2.5f,  1.0f,  0.5f},
-    { 1.5f,  2.5f, -1.5f}, 
-    { 1.5f,  3.5f,  1.0f}, 
-    { 3.0f,  3.0f,  0.0f}
-};
 
 
 // Koordynaty wierzcholkow
-GLfloat vertices[] = {
-    //    coordinates           COLOR           texCoords           vertex normals
-	// Dolna podstawa
-    -0.5f, -0.5f,  0.5f,    1.f, 0.f, 0.f,    0.0f, 0.0f,    -0.577f, -0.577f,  0.577f,  // A
-     0.5f, -0.5f,  0.5f,    1.f, 0.f, 0.f,    1.0f, 0.0f,     0.577f, -0.577f,  0.577f,  // B
-     0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,    1.0f, 1.0f,     0.577f, -0.577f, -0.577f,  // C
-    -0.5f, -0.5f, -0.5f,    1.f, 0.f, 0.f,    0.0f, 1.0f,    -0.577f, -0.577f, -0.577f,  // D
+Vertex vertices[] = {
+    //              Coordinates             Normals                    Colors              TexCoords
+    // Dolna podstawa
+    Vertex { { -0.5f, -0.5f, 0.5f }, { -0.577f, -0.577f, 0.577f }, { 1.f, 0.f, 0.f }, { 0.0f, 0.0f } },  // A
+    Vertex { {  0.5f, -0.5f, 0.5f }, {  0.577f, -0.577f, 0.577f }, { 1.f, 0.f, 0.f }, { 1.0f, 0.0f } },  // B
+    Vertex { {  0.5f, -0.5f, -0.5f }, {  0.577f, -0.577f, -0.577f }, { 1.f, 0.f, 0.f }, { 1.0f, 1.0f } }, // C
+    Vertex { { -0.5f, -0.5f, -0.5f }, { -0.577f, -0.577f, -0.577f }, { 1.f, 0.f, 0.f }, { 0.0f, 1.0f } },  // D
 
     // Przednia ściana
-    -0.5f, -0.5f,  0.5f,    0.f, 1.f, 0.f,    0.0f, 0.0f,    -0.577f, -0.577f,  0.577f,  // A
-     0.5f, -0.5f,  0.5f,    0.f, 1.f, 0.f,    1.0f, 0.0f,     0.577f, -0.577f,  0.577f,  // B
-     0.5f,  0.5f,  0.5f,    0.f, 1.f, 0.f,    1.0f, 1.0f,     0.577f,  0.577f,  0.577f,  // F
-    -0.5f,  0.5f,  0.5f,    0.f, 1.f, 0.f,    0.0f, 1.0f,    -0.577f,  0.577f,  0.577f,  // E
+    Vertex { { -0.5f, -0.5f, 0.5f }, { -0.577f, -0.577f, 0.577f }, { 0.f, 1.f, 0.f }, { 0.0f, 0.0f } },  // A
+    Vertex { {  0.5f, -0.5f, 0.5f }, {  0.577f, -0.577f, 0.577f }, { 0.f, 1.f, 0.f }, { 1.0f, 0.0f } },  // B
+    Vertex { {  0.5f,  0.5f, 0.5f }, {  0.577f,  0.577f, 0.577f }, { 0.f, 1.f, 0.f }, { 1.0f, 1.0f } },  // F
+    Vertex { { -0.5f,  0.5f, 0.5f }, { -0.577f,  0.577f, 0.577f }, { 0.f, 1.f, 0.f }, { 0.0f, 1.0f } },  // E
 
     // Prawa ściana
-     0.5f, -0.5f,  0.5f,    0.f, 0.f, 1.f,    0.0f, 0.0f,     0.577f, -0.577f,  0.577f,  // B
-     0.5f, -0.5f, -0.5f,    0.f, 0.f, 1.f,    1.0f, 0.0f,     0.577f, -0.577f, -0.577f,  // C
-     0.5f,  0.5f, -0.5f,    0.f, 0.f, 1.f,    1.0f, 1.0f,     0.577f,  0.577f, -0.577f,  // G
-     0.5f,  0.5f,  0.5f,    0.f, 0.f, 1.f,    0.0f, 1.0f,     0.577f,  0.577f,  0.577f,  // F
+    Vertex { {  0.5f, -0.5f, 0.5f }, {  0.577f, -0.577f, 0.577f }, { 0.f, 0.f, 1.f }, { 0.0f, 0.0f } },  // B
+    Vertex { {  0.5f, -0.5f, -0.5f }, {  0.577f, -0.577f, -0.577f }, { 0.f, 0.f, 1.f }, { 1.0f, 0.0f } },  // C
+    Vertex { {  0.5f,  0.5f, -0.5f }, {  0.577f,  0.577f, -0.577f }, { 0.f, 0.f, 1.f }, { 1.0f, 1.0f } }, // G
+    Vertex { {  0.5f,  0.5f, 0.5f }, {  0.577f,  0.577f, 0.577f }, { 0.f, 0.f, 1.f }, { 0.0f, 1.0f } },  // F
 
     // Tylna ściana
-    -0.5f, -0.5f, -0.5f,    1.f, 1.f, 0.f,    1.0f, 0.0f,    -0.577f, -0.577f, -0.577f,  // D
-     0.5f, -0.5f, -0.5f,    1.f, 1.f, 0.f,    0.0f, 0.0f,     0.577f, -0.577f, -0.577f,  // C
-     0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,    0.0f, 1.0f,     0.577f,  0.577f, -0.577f,  // G
-    -0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,    1.0f, 1.0f,    -0.577f,  0.577f, -0.577f,  // H
+    Vertex { { -0.5f, -0.5f, -0.5f }, { -0.577f, -0.577f, -0.577f }, { 1.f, 1.f, 0.f }, { 1.0f, 0.0f } },  // D
+    Vertex { {  0.5f, -0.5f, -0.5f }, {  0.577f, -0.577f, -0.577f }, { 1.f, 1.f, 0.f }, { 0.0f, 0.0f } },  // C
+    Vertex { {  0.5f,  0.5f, -0.5f }, {  0.577f,  0.577f, -0.577f }, { 1.f, 1.f, 0.f }, { 0.0f, 1.0f } }, // G
+    Vertex { { -0.5f,  0.5f, -0.5f }, { -0.577f,  0.577f, -0.577f }, { 1.f, 1.f, 0.f }, { 1.0f, 1.0f } },  // H
 
     // Lewa ściana
-    -0.5f, -0.5f,  0.5f,    1.f, 0.f, 1.f,    1.0f, 0.0f,    -0.577f, -0.577f,  0.577f,  // A
-    -0.5f, -0.5f, -0.5f,    1.f, 0.f, 1.f,    0.0f, 0.0f,    -0.577f, -0.577f, -0.577f,  // D
-    -0.5f,  0.5f, -0.5f,    1.f, 0.f, 1.f,    0.0f, 1.0f,    -0.577f,  0.577f, -0.577f,  // H
-    -0.5f,  0.5f,  0.5f,    1.f, 0.f, 1.f,    1.0f, 1.0f,    -0.577f,  0.577f,  0.577f,  // E
+    Vertex { { -0.5f, -0.5f, 0.5f }, { -0.577f, -0.577f, 0.577f }, { 1.f, 0.f, 1.f }, { 1.0f, 0.0f } },  // A
+    Vertex { { -0.5f, -0.5f, -0.5f }, { -0.577f, -0.577f, -0.577f }, { 1.f, 0.f, 1.f }, { 0.0f, 0.0f } },  // D
+    Vertex { { -0.5f,  0.5f, -0.5f }, { -0.577f,  0.577f, -0.577f }, { 1.f, 0.f, 1.f }, { 0.0f, 1.0f } },  // H
+    Vertex { { -0.5f,  0.5f, 0.5f }, { -0.577f,  0.577f, 0.577f }, { 1.f, 0.f, 1.f }, { 1.0f, 1.0f } },  // E
 
     // Górna podstawa
-    -0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,    1.0f, 1.0f,    -0.577f,  0.577f,  0.577f,  // E
-     0.5f,  0.5f,  0.5f,    1.f, 1.f, 0.f,    0.0f, 1.0f,     0.577f,  0.577f,  0.577f,  // F
-     0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,    0.0f, 0.0f,     0.577f,  0.577f, -0.577f,  // G
-    -0.5f,  0.5f, -0.5f,    1.f, 1.f, 0.f,    1.0f, 0.0f,    -0.577f,  0.577f, -0.577f,  // H
+    Vertex { { -0.5f,  0.5f, 0.5f }, { -0.577f,  0.577f, 0.577f }, { 1.f, 1.f, 0.f }, { 1.0f, 1.0f } },  // E
+    Vertex { {  0.5f,  0.5f, 0.5f }, {  0.577f,  0.577f, 0.577f }, { 1.f, 1.f, 0.f }, { 0.0f, 1.0f } },  // F
+    Vertex { {  0.5f,  0.5f, -0.5f }, {  0.577f,  0.577f, -0.577f }, { 1.f, 1.f, 0.f }, { 0.0f, 0.0f } }, // G
+    Vertex { { -0.5f,  0.5f, -0.5f }, { -0.577f,  0.577f, -0.577f }, { 1.f, 1.f, 0.f }, { 1.0f, 0.0f } }  // H
 };
+
+
 
 // Indeksy okreslajace kolejnosc wierzcholkow
 GLuint indices[] = {
@@ -107,16 +96,16 @@ GLuint indices[] = {
     20, 21, 22,  20, 22, 23  // EFG, EGH
 };
 
-GLfloat lightVertices[] =
-{ //     COORDINATES     //
-	-0.1f, -0.1f,  0.1f,
-	-0.1f, -0.1f, -0.1f,
-	 0.1f, -0.1f, -0.1f,
-	 0.1f, -0.1f,  0.1f,
-	-0.1f,  0.1f,  0.1f,
-	-0.1f,  0.1f, -0.1f,
-	 0.1f,  0.1f, -0.1f,
-	 0.1f,  0.1f,  0.1f
+Vertex lightVertices[] = {
+    //     COORDINATES     //
+    Vertex { { -0.1f, -0.1f,  0.1f } },
+    Vertex { { -0.1f, -0.1f, -0.1f } },
+    Vertex { {  0.1f, -0.1f, -0.1f } },
+    Vertex { {  0.1f, -0.1f,  0.1f } },
+    Vertex { { -0.1f,  0.1f,  0.1f } },
+    Vertex { { -0.1f,  0.1f, -0.1f } },
+    Vertex { {  0.1f,  0.1f, -0.1f } },
+    Vertex { {  0.1f,  0.1f,  0.1f } }
 };
 
 GLuint lightIndices[] =
@@ -173,61 +162,42 @@ int main() {
     Shader shaderProgram("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Shaders\\default.vert", 
                          "C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Shaders\\default.frag");
 
-    VAO VAO1;
-    VAO1.Bind();
 
-    VBO VBO1(vertices, sizeof(vertices));
-    EBO EBO1(indices, sizeof(indices));
+    vector <Vertex> verts(vertices, 1 + vertices + sizeof(vertices)/sizeof(Vertex));
+    vector <GLuint> inds(indices, indices + sizeof(indices)/sizeof(GLuint));
+    Texture tex("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\chihuahua.png", GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
 
-    VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 11 * sizeof(float), (void*)0);
-    VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 11 * sizeof(float), (void*)(3 * sizeof(float)));
-    VAO1.LinkAttrib(VBO1, 2, 2, GL_FLOAT, 11 * sizeof(float), (void*)(6 * sizeof(float)));
-    VAO1.LinkAttrib(VBO1, 3, 3, GL_FLOAT, 11 * sizeof(float), (void*)(8 * sizeof(float)));
+    Mesh cube(verts, inds, tex);
 
-    VAO1.Unbind();
-    VBO1.Unbind();
-    EBO1.Unbind();
 
+
+    // Tworzymy light shader
     Shader lightShader("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Shaders\\light.vert", 
                          "C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Shaders\\light.frag");
 
-    VAO lightVAO;
-    lightVAO.Bind();
+	vector <Vertex> lVerts(lightVertices, lightVertices + sizeof(lightVertices) / sizeof(Vertex));
+	vector <GLuint> lInds(lightIndices, lightIndices + sizeof(lightIndices) / sizeof(GLuint));
 
-    VBO lightVBO(lightVertices, sizeof(lightVertices));
-    EBO lightEBO(lightIndices, sizeof(lightIndices));
+	Mesh light(lVerts, lInds, tex);
 
-    lightVAO.LinkAttrib(lightVBO, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
-
-    lightVAO.Unbind();
-    lightVBO.Unbind();
-    lightEBO.Unbind();
 
     vec4 lightColor = {1.0f, 1.0f, 1.0f, 1.0f};
 
-
     lightShader.Activate();
-
     glUniform4f(glGetUniformLocation(lightShader.ID, "lightColor"), lightColor[0], lightColor[1], lightColor[2], lightColor[3]);
+
+
+
+    vec3 cubePos = {1.0f, 1.0f, 0.0f};
+    mat4x4 cubeModel;
+    mat4x4_identity(cubeModel);
+    mat4x4_translate(cubeModel, cubePos[0], cubePos[1], cubePos[2]);
 
     shaderProgram.Activate();
     glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor[0], lightColor[1], lightColor[2], lightColor[3]);
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, (const GLfloat*)cubeModel);
 
 
-
-    // Inicjalizujemy tekstury
-    Texture textures[5] = {
-        Texture("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\chihuahua.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE),
-        Texture("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\monalisa.png", GL_TEXTURE_2D, GL_TEXTURE1, GL_RGBA, GL_UNSIGNED_BYTE),
-        Texture("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\nice.png", GL_TEXTURE_2D, GL_TEXTURE2, GL_RGBA, GL_UNSIGNED_BYTE),
-        Texture("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\cat.png", GL_TEXTURE_2D, GL_TEXTURE3, GL_RGBA, GL_UNSIGNED_BYTE),
-        Texture("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\shaq.png", GL_TEXTURE_2D, GL_TEXTURE4, GL_RGBA, GL_UNSIGNED_BYTE)
-    };
-
-    // Przypisanie tekstur do uniformów jednorazowo
-    GLuint textureLoc = glGetUniformLocation(shaderProgram.ID, "textures");
-    int textureIndices[5] = {0, 1, 2, 3, 4};
-    glUniform1iv(textureLoc, 5, textureIndices);
 
 
     // Włączamy testowanie głębokości
@@ -247,14 +217,11 @@ int main() {
         mat4x4_identity(lightModel);
         mat4x4_translate(lightModel, lightPos[0], lightPos[1], lightPos[2]);
 
-
         lightShader.Activate();
         glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, (const GLfloat*)lightModel);
 
-        // Aktywuj shader
         shaderProgram.Activate();
         glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-        glUniform1i(glGetUniformLocation(shaderProgram.ID, "shaderType"), shaderType);
         glUniform3f(glGetUniformLocation(shaderProgram.ID, "camPos"), camera.Position[0], camera.Position[1], camera.Position[2]);
 
 
@@ -262,8 +229,6 @@ int main() {
         vec3 right;
         vec3_mul_cross(right, camera.Orientation, camera.Up);
         vec3_norm(right, right);
-
-
         if (ifCamera){
             // Zmiana FOV
             if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) 
@@ -303,36 +268,10 @@ int main() {
                 lightPos[1] -= 0.0003f;  
         }
 
-        // Renderowanie sześcianów
-        for (int i = 0; i < 5; i++) {
-            mat4x4 model;
-            mat4x4_identity(model);
-            mat4x4_translate(model, cubePositions[i][0], cubePositions[i][1], cubePositions[i][2]);
 
-            // Przekazanie macierzy modelu do shadera
-            GLuint modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (const GLfloat*)model);
 
-            // Aktywowanie odpowiedniej jednostki tekstury
-            glActiveTexture(GL_TEXTURE0 + i); // Aktywuj jednostkę tekstury
-
-            // Wiązanie odpowiedniej tekstury
-            textures[i].Bind();
-
-            // Ustawienie 'type' do wyboru tekstury
-            glUniform1i(glGetUniformLocation(shaderProgram.ID, "type"), i); // 'i' będzie wskazywać, która tekstura ma być użyta
-
-            // Wiązanie VAO
-            VAO1.Bind();
-
-            // Rysowanie sześcianu
-            glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(int), GL_UNSIGNED_INT, 0);
-        }
-
-        lightShader.Activate();
-        camera.Matrix(lightShader);
-        lightVAO.Bind();
-        glDrawElements(GL_TRIANGLES, sizeof(lightIndices) / sizeof(int), GL_UNSIGNED_INT, 0);
+        cube.Draw(shaderProgram, camera);
+        light.Draw(lightShader, camera);
 
         // Zmieniamy bufor
         glfwSwapBuffers(window);
@@ -343,13 +282,8 @@ int main() {
 
 
     // Usuwamy wszystkie stworzone obiekty
-    VAO1.Delete();
-    VBO1.Delete();
-    EBO1.Delete();
-    for (int i = 0; i < 5; i++) {
-        textures[i].Delete();
-    }
     shaderProgram.Delete();
+    lightShader.Delete();
 
     glfwDestroyWindow(window);
     glfwTerminate();
