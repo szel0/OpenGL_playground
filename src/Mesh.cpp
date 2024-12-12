@@ -1,5 +1,9 @@
 #include "Mesh.h"
 
+Mesh::Mesh() {
+
+}
+
 Mesh::Mesh(std::vector <Vertex>& vertices, std::vector <GLuint>& indices, Texture& texture) 
     : vertices(vertices), indices(indices), texture(texture) {
         VAO.Bind();

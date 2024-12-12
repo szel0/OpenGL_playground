@@ -40,35 +40,6 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         ifCamera = !ifCamera;
 }
 
-
-Vertex lightVertices[] = {
-    //     COORDINATES     //
-    Vertex { { -0.1f, -0.1f,  0.1f } },
-    Vertex { { -0.1f, -0.1f, -0.1f } },
-    Vertex { {  0.1f, -0.1f, -0.1f } },
-    Vertex { {  0.1f, -0.1f,  0.1f } },
-    Vertex { { -0.1f,  0.1f,  0.1f } },
-    Vertex { { -0.1f,  0.1f, -0.1f } },
-    Vertex { {  0.1f,  0.1f, -0.1f } },
-    Vertex { {  0.1f,  0.1f,  0.1f } }
-};
-
-GLuint lightIndices[] =
-{
-	0, 1, 2,
-	0, 2, 3,
-	0, 4, 7,
-	0, 7, 3,
-	3, 7, 6,
-	3, 6, 2,
-	2, 6, 5,
-	2, 5, 1,
-	1, 5, 4,
-	1, 4, 0,
-	4, 5, 6,
-	4, 6, 7
-};
-
 string getExecutablePath() {
     char buffer[MAX_PATH];
     GetModuleFileName(NULL, buffer, MAX_PATH);
@@ -101,7 +72,51 @@ void calculateNormal(vec3& triangleNormal, vector <array<float, 3>> tempPosition
     vec3_mul_cross(triangleNormal, edge1, edge2);
 }
 
-bool loadObjFile(const string& path, vector <Vertex>& vertices, vector <GLuint>& indices) {
+struct Material {
+    vec3 Ka;
+    vec3 Kd;
+    vec3 Ks;
+    float Ns;
+    string map_Kd;
+};
+
+void loadMaterial(const string& materialFile, Material& material) {
+    string materialPath = basePath + "\\Resource Files\\Materials\\" + materialFile;
+    ifstream file(materialPath);
+    if (!file.is_open()){
+        cerr << "Failed to open *.mtl file " << materialPath << endl;
+    }
+
+    string line;
+    while (getline(file, line)) {
+        istringstream iss(line);
+        string prefix;
+        iss >> prefix;
+
+        if (prefix == "Ka") {
+            iss >> material.Ka[0] >> material.Ka[1] >> material.Ka[2];
+            // cout << material.Ka[0] << " " << material.Ka[1] << " " << material.Ka[2] << endl;
+        } else if (prefix == "Kd") {
+            iss >> material.Kd[0] >> material.Kd[1] >> material.Kd[2];
+            // cout << material.Kd[0] << " " << material.Kd[1] << " " << material.Kd[2] << endl;
+        } else if (prefix == "Ks") {
+            iss >> material.Ks[0] >> material.Ks[1] >> material.Ks[2];
+            // cout << material.Ks[0] << " " << material.Ks[1] << " " << material.Ks[2] << endl;
+        } else if (prefix == "Ns") {
+            iss >> material.Ns;
+            // cout << material.Ns << endl;
+        } else if (prefix == "map_Kd") {
+            iss >> material.map_Kd;
+            // cout << material.map_Kd << endl;
+        }
+    }
+
+    file.close();
+
+    cout << "zaladowano " << materialPath<< endl;
+}
+
+bool loadObjFile(const string& path, vector <Vertex>& vertices, vector <GLuint>& indices, string& material) {
     vector <array<float, 3>> tempPositions;
     vector <array<float, 2>> tempTexCoords;
     vector <array<float, 3>> tempNormals; 
@@ -110,18 +125,22 @@ bool loadObjFile(const string& path, vector <Vertex>& vertices, vector <GLuint>&
 
     bool isShaded = false;
 
+    string line;
+
     ifstream file(path);
+
     if (!file.is_open()){
-        cerr << "Failed to open *.obj file" << path << endl;
+        cerr << "Failed to open *.obj file " << path << endl;
         return false;
     }
-    
-    string line;
 
     while (getline(file, line)) {
         istringstream  ss(line);
         string lineHeader;
         ss >> lineHeader;
+        if (lineHeader == "mtllib") {
+            ss >> material;
+        }
         if (lineHeader == "v") {
             array <float, 3> position;
             ss >> position[0] >> position[1] >> position[2];
@@ -225,10 +244,6 @@ void printIndices(const vector<GLuint>& indices) {
 }
 
 int main() {
-    vector <Vertex> objVerts;
-    vector <GLuint> objInds;
-    loadObjFile(basePath + "\\Resource Files\\Objects\\cube.obj", objVerts, objInds);
-
     // Inicjalizacja GLFW
     glfwInit();
 
@@ -265,12 +280,35 @@ int main() {
     Shader shaderProgram((basePath + "\\Resource Files\\Shaders\\default.vert").c_str(), 
                          (basePath + "\\Resource Files\\Shaders\\default.frag").c_str());
 
+    Texture texDefault((basePath + "\\Resource Files\\Textures\\chihuahua.png").c_str(), GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
 
-    Texture tex((basePath + "\\Resource Files\\Textures\\chihuahua.png").c_str(), GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+    vector <Vertex> objVerts;
+    vector <GLuint> objInds;
+    string objMaterialFile = "12345";
+    loadObjFile(basePath + "\\Resource Files\\Objects\\Sting-Sword.obj", objVerts, objInds, objMaterialFile);
 
-    Mesh cube(objVerts, objInds, tex);
+    Mesh obj;
+    Material objMaterial;
 
+    if (objMaterialFile.substr(objMaterialFile.length() - 4) == ".mtl") {    
+        loadMaterial(objMaterialFile, objMaterial);
+        cout << objMaterial.Ka[0] << " " << objMaterial.Ka[1] << " " << objMaterial.Ka[2] << endl; 
+        cout << objMaterial.Kd[0] << " " << objMaterial.Kd[1] << " " << objMaterial.Kd[2] << endl; 
+        cout << objMaterial.Ks[0] << " " << objMaterial.Ks[1] << " " << objMaterial.Ks[2] << endl; 
+        cout << objMaterial.Ns <<  endl; 
+        cout << objMaterial.map_Kd <<  endl;
+        Texture tex((basePath + "\\Resource Files\\Textures\\" + objMaterial.map_Kd).c_str(), GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+        obj = Mesh(objVerts, objInds, tex);
+    } else {
+        cerr << "Blad wczytywania materialu" << endl;
+        return -1;
+    }
 
+    shaderProgram.Activate();
+    glUniform3f(glGetUniformLocation(shaderProgram.ID, "Ka"), objMaterial.Ka[0], objMaterial.Ka[1], objMaterial.Ka[2]);
+    glUniform3f(glGetUniformLocation(shaderProgram.ID, "Kd"), objMaterial.Kd[0], objMaterial.Kd[1], objMaterial.Kd[2]);
+    glUniform3f(glGetUniformLocation(shaderProgram.ID, "Ks"), objMaterial.Ks[0], objMaterial.Ks[1], objMaterial.Ks[2]);
+    glUniform1f(glGetUniformLocation(shaderProgram.ID, "Ns"), objMaterial.Ns);
 
     // Tworzymy light shader
     Shader lightShader((basePath + "\\Resource Files\\Shaders\\light.vert").c_str(), 
@@ -278,12 +316,15 @@ int main() {
 
 	vector <Vertex> lVerts;
 	vector <GLuint> lInds;
-    loadObjFile(basePath + "\\Resource Files\\Objects\\light.obj", lVerts, lInds);
+    string lightMaterialFile = "12345";
+    loadObjFile(basePath + "\\Resource Files\\Objects\\light.obj", lVerts, lInds, lightMaterialFile);
 
-	Mesh light(lVerts, lInds, tex);
+    // cout << objMaterialFile << " " << lightMaterialFile << endl;
+
+	Mesh light(lVerts, lInds, texDefault);
 
 
-    vec4 lightColor = {1.0f, 1.0f, 1.0f, 1.0f};
+    vec4 lightColor = {1.0f, 0.0f, 0.0f, 1.0f};
 
     lightShader.Activate();
     glUniform4f(glGetUniformLocation(lightShader.ID, "lightColor"), lightColor[0], lightColor[1], lightColor[2], lightColor[3]);
@@ -381,7 +422,7 @@ int main() {
 
 
 
-        cube.Draw(shaderProgram, camera);
+        obj.Draw(shaderProgram, camera);
         light.Draw(lightShader, camera);
 
         // Zmieniamy bufor

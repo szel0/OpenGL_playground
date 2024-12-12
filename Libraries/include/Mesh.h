@@ -16,6 +16,7 @@ class Mesh {
 
         VAO VAO;
 
+        Mesh();
         Mesh(std::vector <Vertex>& vertices, std::vector <GLuint>& indices, Texture& texture);
 
         void Draw(Shader& shader, Camera& camera);
