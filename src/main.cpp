@@ -1,7 +1,14 @@
 #define _USE_MATH_DEFINES
 
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <filesystem>
+#include <array>
+#include <windows.h>
+
 #include "Mesh.h"
+
 // #include <glad/gl.h>
 // #include <GLFW/glfw3.h>
 // //#include <math.h>
@@ -73,6 +80,17 @@ Vertex vertices[] = {
     Vertex { { -0.5f,  0.5f, -0.5f }, { -0.577f,  0.577f, -0.577f }, { 1.f, 1.f, 0.f }, { 1.0f, 0.0f } }  // H
 };
 
+Vertex testVertices[] {
+    Vertex { { -0.5f, -0.5f, 0.5f }, { -0.577f, -0.577f, 0.577f }, { 1.f, 0.f, 0.f }, { 0.0f, 0.0f } },  // A
+    Vertex { {  0.5f, -0.5f, 0.5f }, {  0.577f, -0.577f, 0.577f }, { 1.f, 0.f, 0.f }, { 1.0f, 0.0f } },  // B
+    Vertex { {  0.5f, -0.5f, -0.5f }, {  0.577f, -0.577f, -0.577f }, { 1.f, 0.f, 0.f }, { 1.0f, 1.0f } }, // C
+    Vertex { { -0.5f, -0.5f, -0.5f }, { -0.577f, -0.577f, -0.577f }, { 1.f, 0.f, 0.f }, { 0.0f, 1.0f } },  // D
+    Vertex { { -0.5f,  0.5f, 0.5f }, { -0.577f, -0.577f, 0.577f }, { 0.f, 1.f, 0.f }, { 0.0f, 0.0f } },  // A
+    Vertex { {  0.5f,  0.5f, 0.5f }, {  0.577f, -0.577f, 0.577f }, { 0.f, 1.f, 0.f }, { 1.0f, 0.0f } },  // B
+    Vertex { {  0.5f,  0.5f, -0.5f }, { -0.577f, -0.577f, 0.577f }, { 0.f, 1.f, 0.f }, { 0.0f, 0.0f } },  // A
+    Vertex { { -0.5f,  0.5f, -0.5f }, {  0.577f, -0.577f, 0.577f }, { 0.f, 1.f, 0.f }, { 1.0f, 0.0f } },  // B
+};
+
 
 
 // Indeksy okreslajace kolejnosc wierzcholkow
@@ -124,8 +142,130 @@ GLuint lightIndices[] =
 	4, 6, 7
 };
 
+string getExecutablePath() {
+    char buffer[MAX_PATH];
+    GetModuleFileName(NULL, buffer, MAX_PATH);
+    filesystem::path exePath(buffer);
+    return exePath.parent_path().string();
+}
+string basePath = getExecutablePath();
+
+
+bool loadObjFile(const string& path, vector <Vertex>& vertices, vector <GLuint>& indices, bool siema) {
+    vector <array<float, 3>> tempPositions;
+    vector <array<float, 2>> tempTexCoords;
+    vector <array<float, 3>> tempNormals; 
+    vector <GLuint> tempIndices;
+
+    ifstream file(path);
+    if (!file.is_open()){
+        cerr << "Failed to open *.obj file" << path << endl;
+        return false;
+    }
+    
+    string line;
+
+    while (getline(file, line)) {
+        istringstream  ss(line);
+        string lineHeader;
+        ss >> lineHeader;
+        if (lineHeader == "v") {
+            array <float, 3> position;
+            ss >> position[0] >> position[1] >> position[2];
+            tempPositions.push_back(position);
+        } else if (lineHeader == "vt") {
+            array <float, 2> texCoord;
+            ss >> texCoord[0] >> texCoord[1];
+            tempTexCoords.push_back(texCoord);          
+        } else if (lineHeader == "vn") {
+            array <float, 3> normal;
+            ss >> normal[0] >> normal[1] >> normal[2];
+            tempNormals.push_back(normal);          
+        } else if (lineHeader == "f") {
+            if (siema) {
+                unsigned int vIdx[3], tIdx[3], nIdx[3];
+                char slash;
+                ss >> vIdx[0] >> slash >> tIdx[0] >> slash >> nIdx[0]
+                >> vIdx[1] >> slash >> tIdx[1] >> slash >> nIdx[1]
+                >> vIdx[2] >> slash >> tIdx[2] >> slash >> nIdx[2];
+            
+                for (int i = 0; i < 3; ++ i) {
+                    Vertex vertex;
+                    vertex.position[0] = tempPositions[vIdx[i] - 1][0];
+                    vertex.position[1] = tempPositions[vIdx[i] - 1][1];
+                    vertex.position[2] = tempPositions[vIdx[i] - 1][2];
+                    vertex.normal[0] = tempNormals[nIdx[i] - 1][0];
+                    vertex.normal[1] = tempNormals[nIdx[i] - 1][1];
+                    vertex.normal[2] = tempNormals[nIdx[i] - 1][2];
+                    vertex.color[0] = 1.0f;
+                    vertex.color[1] = 0.0f;
+                    vertex.color[2] = 0.0f;
+                    vertex.texUV[0] = tempTexCoords[tIdx[i] - 1][0];
+                    vertex.texUV[1] = tempTexCoords[tIdx[i] - 1][1];
+                    
+                    vertices.push_back(vertex);
+                }
+            } else {
+                unsigned int vIdx[3];
+                ss >> vIdx[0] >> vIdx[1] >> vIdx[2];
+
+                for (int i = 0; i < 3; ++ i) {
+                    Vertex vertex;
+                    vertex.position[0] = tempPositions[vIdx[i] - 1][0];
+                    vertex.position[1] = tempPositions[vIdx[i] - 1][1];
+                    vertex.position[2] = tempPositions[vIdx[i] - 1][2];
+                    vertex.normal[0] = 0.0f;
+                    vertex.normal[1] = 0.0f;
+                    vertex.normal[2] = 0.0f;
+                    vertex.color[0] = 1.0f;
+                    vertex.color[1] = 0.0f;
+                    vertex.color[2] = 0.0f;
+                    vertex.texUV[0] = 1.0f;
+                    vertex.texUV[1] = 1.0f;
+
+                    vertices.push_back(vertex);
+                }
+            }
+            for (int i = 0; i < vertices.size(); ++ i)  indices.push_back(i);
+        }
+    }
+
+    file.close();
+    return true;
+}
+
+void printVertices(const vector<Vertex>& vertices) {
+    for (size_t i = 0; i < vertices.size(); ++i) {
+        const Vertex& v = vertices[i];
+        cout << "Vertex " << i << ":\n";
+        cout << "Position: (" << v.position[0] << ", " << v.position[1] << ", " << v.position[2] << ")\n";
+        cout << "Normal: (" << v.normal[0] << ", " << v.normal[1] << ", " << v.normal[2] << ")\n";
+        cout << "Color: (" << v.color[0] << ", " << v.color[1] << ", " << v.color[2] << ")\n";
+        cout << "TexUV: (" << v.texUV[0] << ", " << v.texUV[1] << ")\n";
+        cout << "-----------------------------\n";
+    }
+    cout << vertices.size() << endl;
+}
+
+void printIndices(const vector<GLuint>& indices) {
+    for (size_t i = 0; i < indices.size(); i += 3) {
+        cout<< "Indices: ";
+        for (int j = 0; j < 3; ++ j) {
+            cout << indices[i + j] << " ";
+        }
+        cout << endl;
+    }
+    cout << indices.size() << endl;
+}
 
 int main() {
+    vector <Vertex> testV;
+    vector <GLuint> testI;
+    loadObjFile(basePath + "\\Resource Files\\Objects\\teapot.obj", testV, testI, false);
+
+    //printVertices(testV);
+    //printIndices(testI);
+
     // Inicjalizacja GLFW
     glfwInit();
 
@@ -159,21 +299,21 @@ int main() {
     glViewport(0, 0, width, height);
 
     // Tworzymy shader program
-    Shader shaderProgram("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Shaders\\default.vert", 
-                         "C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Shaders\\default.frag");
+    Shader shaderProgram((basePath + "\\Resource Files\\Shaders\\default.vert").c_str(), 
+                         (basePath + "\\Resource Files\\Shaders\\default.frag").c_str());
 
 
-    vector <Vertex> verts(vertices, 1 + vertices + sizeof(vertices)/sizeof(Vertex));
+    vector <Vertex> verts(testVertices, 1 + testVertices + sizeof(testVertices)/sizeof(Vertex));
     vector <GLuint> inds(indices, indices + sizeof(indices)/sizeof(GLuint));
-    Texture tex("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Textures\\chihuahua.png", GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+    Texture tex((basePath + "\\Resource Files\\Textures\\red.png").c_str(), GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
 
-    Mesh cube(verts, inds, tex);
+    Mesh cube(testV, testI, tex);
 
 
 
     // Tworzymy light shader
-    Shader lightShader("C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Shaders\\light.vert", 
-                         "C:\\Users\\user\\Desktop\\Szelo\\VR\\graniastoslup\\Resource Files\\Shaders\\light.frag");
+    Shader lightShader((basePath + "\\Resource Files\\Shaders\\light.vert").c_str(), 
+                         (basePath + "\\Resource Files\\Shaders\\light.frag").c_str());
 
 	vector <Vertex> lVerts(lightVertices, lightVertices + sizeof(lightVertices) / sizeof(Vertex));
 	vector <GLuint> lInds(lightIndices, lightIndices + sizeof(lightIndices) / sizeof(GLuint));
@@ -271,7 +411,7 @@ int main() {
 
 
         cube.Draw(shaderProgram, camera);
-        light.Draw(lightShader, camera);
+        //light.Draw(lightShader, camera);
 
         // Zmieniamy bufor
         glfwSwapBuffers(window);
