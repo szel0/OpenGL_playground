@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <array>
 #include <windows.h>
+#include <unordered_map>
 
 #include "Mesh.h"
 
@@ -39,80 +40,6 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         ifCamera = !ifCamera;
 }
 
-
-// Koordynaty wierzcholkow
-Vertex vertices[] = {
-    //              Coordinates             Normals                    Colors              TexCoords
-    // Dolna podstawa
-    Vertex { { -0.5f, -0.5f, 0.5f }, { -0.577f, -0.577f, 0.577f }, { 1.f, 0.f, 0.f }, { 0.0f, 0.0f } },  // A
-    Vertex { {  0.5f, -0.5f, 0.5f }, {  0.577f, -0.577f, 0.577f }, { 1.f, 0.f, 0.f }, { 1.0f, 0.0f } },  // B
-    Vertex { {  0.5f, -0.5f, -0.5f }, {  0.577f, -0.577f, -0.577f }, { 1.f, 0.f, 0.f }, { 1.0f, 1.0f } }, // C
-    Vertex { { -0.5f, -0.5f, -0.5f }, { -0.577f, -0.577f, -0.577f }, { 1.f, 0.f, 0.f }, { 0.0f, 1.0f } },  // D
-
-    // Przednia ściana
-    Vertex { { -0.5f, -0.5f, 0.5f }, { -0.577f, -0.577f, 0.577f }, { 0.f, 1.f, 0.f }, { 0.0f, 0.0f } },  // A
-    Vertex { {  0.5f, -0.5f, 0.5f }, {  0.577f, -0.577f, 0.577f }, { 0.f, 1.f, 0.f }, { 1.0f, 0.0f } },  // B
-    Vertex { {  0.5f,  0.5f, 0.5f }, {  0.577f,  0.577f, 0.577f }, { 0.f, 1.f, 0.f }, { 1.0f, 1.0f } },  // F
-    Vertex { { -0.5f,  0.5f, 0.5f }, { -0.577f,  0.577f, 0.577f }, { 0.f, 1.f, 0.f }, { 0.0f, 1.0f } },  // E
-
-    // Prawa ściana
-    Vertex { {  0.5f, -0.5f, 0.5f }, {  0.577f, -0.577f, 0.577f }, { 0.f, 0.f, 1.f }, { 0.0f, 0.0f } },  // B
-    Vertex { {  0.5f, -0.5f, -0.5f }, {  0.577f, -0.577f, -0.577f }, { 0.f, 0.f, 1.f }, { 1.0f, 0.0f } },  // C
-    Vertex { {  0.5f,  0.5f, -0.5f }, {  0.577f,  0.577f, -0.577f }, { 0.f, 0.f, 1.f }, { 1.0f, 1.0f } }, // G
-    Vertex { {  0.5f,  0.5f, 0.5f }, {  0.577f,  0.577f, 0.577f }, { 0.f, 0.f, 1.f }, { 0.0f, 1.0f } },  // F
-
-    // Tylna ściana
-    Vertex { { -0.5f, -0.5f, -0.5f }, { -0.577f, -0.577f, -0.577f }, { 1.f, 1.f, 0.f }, { 1.0f, 0.0f } },  // D
-    Vertex { {  0.5f, -0.5f, -0.5f }, {  0.577f, -0.577f, -0.577f }, { 1.f, 1.f, 0.f }, { 0.0f, 0.0f } },  // C
-    Vertex { {  0.5f,  0.5f, -0.5f }, {  0.577f,  0.577f, -0.577f }, { 1.f, 1.f, 0.f }, { 0.0f, 1.0f } }, // G
-    Vertex { { -0.5f,  0.5f, -0.5f }, { -0.577f,  0.577f, -0.577f }, { 1.f, 1.f, 0.f }, { 1.0f, 1.0f } },  // H
-
-    // Lewa ściana
-    Vertex { { -0.5f, -0.5f, 0.5f }, { -0.577f, -0.577f, 0.577f }, { 1.f, 0.f, 1.f }, { 1.0f, 0.0f } },  // A
-    Vertex { { -0.5f, -0.5f, -0.5f }, { -0.577f, -0.577f, -0.577f }, { 1.f, 0.f, 1.f }, { 0.0f, 0.0f } },  // D
-    Vertex { { -0.5f,  0.5f, -0.5f }, { -0.577f,  0.577f, -0.577f }, { 1.f, 0.f, 1.f }, { 0.0f, 1.0f } },  // H
-    Vertex { { -0.5f,  0.5f, 0.5f }, { -0.577f,  0.577f, 0.577f }, { 1.f, 0.f, 1.f }, { 1.0f, 1.0f } },  // E
-
-    // Górna podstawa
-    Vertex { { -0.5f,  0.5f, 0.5f }, { -0.577f,  0.577f, 0.577f }, { 1.f, 1.f, 0.f }, { 1.0f, 1.0f } },  // E
-    Vertex { {  0.5f,  0.5f, 0.5f }, {  0.577f,  0.577f, 0.577f }, { 1.f, 1.f, 0.f }, { 0.0f, 1.0f } },  // F
-    Vertex { {  0.5f,  0.5f, -0.5f }, {  0.577f,  0.577f, -0.577f }, { 1.f, 1.f, 0.f }, { 0.0f, 0.0f } }, // G
-    Vertex { { -0.5f,  0.5f, -0.5f }, { -0.577f,  0.577f, -0.577f }, { 1.f, 1.f, 0.f }, { 1.0f, 0.0f } }  // H
-};
-
-Vertex testVertices[] {
-    Vertex { { -0.5f, -0.5f, 0.5f }, { -0.577f, -0.577f, 0.577f }, { 1.f, 0.f, 0.f }, { 0.0f, 0.0f } },  // A
-    Vertex { {  0.5f, -0.5f, 0.5f }, {  0.577f, -0.577f, 0.577f }, { 1.f, 0.f, 0.f }, { 1.0f, 0.0f } },  // B
-    Vertex { {  0.5f, -0.5f, -0.5f }, {  0.577f, -0.577f, -0.577f }, { 1.f, 0.f, 0.f }, { 1.0f, 1.0f } }, // C
-    Vertex { { -0.5f, -0.5f, -0.5f }, { -0.577f, -0.577f, -0.577f }, { 1.f, 0.f, 0.f }, { 0.0f, 1.0f } },  // D
-    Vertex { { -0.5f,  0.5f, 0.5f }, { -0.577f, -0.577f, 0.577f }, { 0.f, 1.f, 0.f }, { 0.0f, 0.0f } },  // A
-    Vertex { {  0.5f,  0.5f, 0.5f }, {  0.577f, -0.577f, 0.577f }, { 0.f, 1.f, 0.f }, { 1.0f, 0.0f } },  // B
-    Vertex { {  0.5f,  0.5f, -0.5f }, { -0.577f, -0.577f, 0.577f }, { 0.f, 1.f, 0.f }, { 0.0f, 0.0f } },  // A
-    Vertex { { -0.5f,  0.5f, -0.5f }, {  0.577f, -0.577f, 0.577f }, { 0.f, 1.f, 0.f }, { 1.0f, 0.0f } },  // B
-};
-
-
-
-// Indeksy okreslajace kolejnosc wierzcholkow
-GLuint indices[] = {
-    // Dolna podstawa
-    0, 1, 2,  0, 2, 3, // ABC, ACD
-
-    // Przednia ściana
-    4, 5, 6,  4, 6, 7, // ABF, AFE
-
-    // Prawa ściana
-    8, 9, 10,  8, 10, 11, // BCG, BGF
-
-    // Tylna ściana
-    12, 13, 14,  12, 14, 15, // DCG, DGH
-
-    // Lewa ściana
-    16, 17, 18,  16, 18, 19, // ADH, AHE
-
-    // Górna podstawa
-    20, 21, 22,  20, 22, 23  // EFG, EGH
-};
 
 Vertex lightVertices[] = {
     //     COORDINATES     //
@@ -179,6 +106,7 @@ bool loadObjFile(const string& path, vector <Vertex>& vertices, vector <GLuint>&
     vector <array<float, 2>> tempTexCoords;
     vector <array<float, 3>> tempNormals; 
     vector <GLuint> tempIndices;
+    unordered_map <string, GLuint> uniqueVertexMap;
 
     bool isShaded = false;
 
@@ -214,22 +142,30 @@ bool loadObjFile(const string& path, vector <Vertex>& vertices, vector <GLuint>&
                 ss >> vIdx[0] >> slash >> tIdx[0] >> slash >> nIdx[0]
                 >> vIdx[1] >> slash >> tIdx[1] >> slash >> nIdx[1]
                 >> vIdx[2] >> slash >> tIdx[2] >> slash >> nIdx[2];
-            
+                
                 for (int i = 0; i < 3; ++ i) {
-                    Vertex vertex;
-                    vertex.position[0] = tempPositions[vIdx[i] - 1][0];
-                    vertex.position[1] = tempPositions[vIdx[i] - 1][1];
-                    vertex.position[2] = tempPositions[vIdx[i] - 1][2];
-                    vertex.normal[0] = tempNormals[nIdx[i] - 1][0];
-                    vertex.normal[1] = tempNormals[nIdx[i] - 1][1];
-                    vertex.normal[2] = tempNormals[nIdx[i] - 1][2];
-                    vertex.color[0] = 1.0f;
-                    vertex.color[1] = 0.0f;
-                    vertex.color[2] = 0.0f;
-                    vertex.texUV[0] = tempTexCoords[tIdx[i] - 1][0];
-                    vertex.texUV[1] = tempTexCoords[tIdx[i] - 1][1];
+                    string key = to_string(vIdx[i]) + "/" + to_string(tIdx[i]) + "/" + to_string(nIdx[i]);
                     
-                    vertices.push_back(vertex);
+                    if (uniqueVertexMap.find(key) != uniqueVertexMap.end()) {
+                        indices.push_back(uniqueVertexMap[key]);
+                    } else {
+                        Vertex vertex;
+                        vertex.position[0] = tempPositions[vIdx[i] - 1][0];
+                        vertex.position[1] = tempPositions[vIdx[i] - 1][1];
+                        vertex.position[2] = tempPositions[vIdx[i] - 1][2];
+                        vertex.normal[0] = tempNormals[nIdx[i] - 1][0];
+                        vertex.normal[1] = tempNormals[nIdx[i] - 1][1];
+                        vertex.normal[2] = tempNormals[nIdx[i] - 1][2];
+                        vertex.color[0] = 1.0f;
+                        vertex.color[1] = 0.0f;
+                        vertex.color[2] = 0.0f;
+                        vertex.texUV[0] = tempTexCoords[tIdx[i] - 1][0];
+                        vertex.texUV[1] = tempTexCoords[tIdx[i] - 1][1];
+                        
+                        vertices.push_back(vertex);
+                        indices.push_back(vertices.size() - 1);
+                        uniqueVertexMap[key] = vertices.size() - 1;
+                    }
                 }
             } else {
                 unsigned int vIdx[3];
@@ -253,13 +189,14 @@ bool loadObjFile(const string& path, vector <Vertex>& vertices, vector <GLuint>&
                     vertex.texUV[1] = 1.0f;
 
                     vertices.push_back(vertex);
+                    indices.push_back(vertices.size() - 1);
                 }
             }
-            for (int i = 0; i < vertices.size(); ++ i)  indices.push_back(i);
         }
     }
 
     file.close();
+    vertices.resize(vertices.size() + 1);
     return true;
 }
 
@@ -288,12 +225,9 @@ void printIndices(const vector<GLuint>& indices) {
 }
 
 int main() {
-    vector <Vertex> testV;
-    vector <GLuint> testI;
-    loadObjFile(basePath + "\\Resource Files\\Objects\\teapot.obj", testV, testI);
-
-    //printVertices(testV);
-    //printIndices(testI);
+    vector <Vertex> objVerts;
+    vector <GLuint> objInds;
+    loadObjFile(basePath + "\\Resource Files\\Objects\\cube.obj", objVerts, objInds);
 
     // Inicjalizacja GLFW
     glfwInit();
@@ -332,11 +266,9 @@ int main() {
                          (basePath + "\\Resource Files\\Shaders\\default.frag").c_str());
 
 
-    vector <Vertex> verts(testVertices, 1 + testVertices + sizeof(testVertices)/sizeof(Vertex));
-    vector <GLuint> inds(indices, indices + sizeof(indices)/sizeof(GLuint));
-    Texture tex((basePath + "\\Resource Files\\Textures\\red.png").c_str(), GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+    Texture tex((basePath + "\\Resource Files\\Textures\\chihuahua.png").c_str(), GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
 
-    Mesh cube(testV, testI, tex);
+    Mesh cube(objVerts, objInds, tex);
 
 
 
@@ -344,8 +276,9 @@ int main() {
     Shader lightShader((basePath + "\\Resource Files\\Shaders\\light.vert").c_str(), 
                          (basePath + "\\Resource Files\\Shaders\\light.frag").c_str());
 
-	vector <Vertex> lVerts(lightVertices, lightVertices + sizeof(lightVertices) / sizeof(Vertex));
-	vector <GLuint> lInds(lightIndices, lightIndices + sizeof(lightIndices) / sizeof(GLuint));
+	vector <Vertex> lVerts;
+	vector <GLuint> lInds;
+    loadObjFile(basePath + "\\Resource Files\\Objects\\light.obj", lVerts, lInds);
 
 	Mesh light(lVerts, lInds, tex);
 
