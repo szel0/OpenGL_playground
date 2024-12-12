@@ -280,12 +280,13 @@ int main() {
     Shader shaderProgram((basePath + "\\Resource Files\\Shaders\\default.vert").c_str(), 
                          (basePath + "\\Resource Files\\Shaders\\default.frag").c_str());
 
-    Texture texDefault((basePath + "\\Resource Files\\Textures\\chihuahua.png").c_str(), GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+    Texture texDefault((basePath + "\\Resource Files\\Textures\\red.png").c_str(), GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
 
     vector <Vertex> objVerts;
     vector <GLuint> objInds;
     string objMaterialFile = "12345";
-    loadObjFile(basePath + "\\Resource Files\\Objects\\Sting-Sword.obj", objVerts, objInds, objMaterialFile);
+    loadObjFile(basePath + "\\Resource Files\\Objects\\ICE.obj", objVerts, objInds, objMaterialFile);
+    cout << "dzien dobry" << endl;
 
     Mesh obj;
     Material objMaterial;
@@ -300,8 +301,11 @@ int main() {
         Texture tex((basePath + "\\Resource Files\\Textures\\" + objMaterial.map_Kd).c_str(), GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
         obj = Mesh(objVerts, objInds, tex);
     } else {
-        cerr << "Blad wczytywania materialu" << endl;
-        return -1;
+        obj = Mesh(objVerts, objInds, texDefault);
+        objMaterial.Ka[0] = 0.2f; objMaterial.Ka[1] = 0.2f; objMaterial.Ka[2] = 0.2f;
+        objMaterial.Kd[0] = 0.8f; objMaterial.Kd[1] = 0.8f; objMaterial.Kd[2] = 0.8f;
+        objMaterial.Ks[0] = 1.0f; objMaterial.Ks[1] = 1.0f; objMaterial.Ks[2] = 1.0f;
+        objMaterial.Ns = 32.0f;
     }
 
     shaderProgram.Activate();
@@ -324,7 +328,7 @@ int main() {
 	Mesh light(lVerts, lInds, texDefault);
 
 
-    vec4 lightColor = {1.0f, 0.0f, 0.0f, 1.0f};
+    vec4 lightColor = {1.0f, 1.0f, 1.0f, 1.0f};
 
     lightShader.Activate();
     glUniform4f(glGetUniformLocation(lightShader.ID, "lightColor"), lightColor[0], lightColor[1], lightColor[2], lightColor[3]);
