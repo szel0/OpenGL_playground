@@ -26,7 +26,7 @@ using namespace std;
 
 const unsigned int width = 800;
 const unsigned int height = 800;
-vec3 lightPos = {2.0f, 2.0f, 0.0f};
+vec3 lightPos = {2.0f, 2.0f, 4.5f};
 
 bool ifCamera = true;
 
@@ -150,12 +150,37 @@ string getExecutablePath() {
 }
 string basePath = getExecutablePath();
 
+void calculateNormal(vec3& triangleNormal, vector <array<float, 3>> tempPositions, unsigned int vIdx[3]) {
 
-bool loadObjFile(const string& path, vector <Vertex>& vertices, vector <GLuint>& indices, bool siema) {
+    vector <vec3> triangle(3);
+    triangle[0][0] = tempPositions[vIdx[0] - 1][0];
+    triangle[0][1] = tempPositions[vIdx[0] - 1][1];
+    triangle[0][2] = tempPositions[vIdx[0] - 1][2];
+
+    triangle[1][0] = tempPositions[vIdx[1] - 1][0];
+    triangle[1][1] = tempPositions[vIdx[1] - 1][1];
+    triangle[1][2] = tempPositions[vIdx[1] - 1][2];
+
+    triangle[2][0] = tempPositions[vIdx[2] - 1][0];
+    triangle[2][1] = tempPositions[vIdx[2] - 1][1];
+    triangle[2][2] = tempPositions[vIdx[2] - 1][2];
+
+
+
+    vec3 edge1, edge2;
+    vec3_sub(edge1, triangle[1], triangle[0]);
+    vec3_sub(edge2, triangle[2], triangle[0]);
+
+    vec3_mul_cross(triangleNormal, edge1, edge2);
+}
+
+bool loadObjFile(const string& path, vector <Vertex>& vertices, vector <GLuint>& indices) {
     vector <array<float, 3>> tempPositions;
     vector <array<float, 2>> tempTexCoords;
     vector <array<float, 3>> tempNormals; 
     vector <GLuint> tempIndices;
+
+    bool isShaded = false;
 
     ifstream file(path);
     if (!file.is_open()){
@@ -180,9 +205,10 @@ bool loadObjFile(const string& path, vector <Vertex>& vertices, vector <GLuint>&
         } else if (lineHeader == "vn") {
             array <float, 3> normal;
             ss >> normal[0] >> normal[1] >> normal[2];
-            tempNormals.push_back(normal);          
+            tempNormals.push_back(normal); 
+            isShaded = true;         
         } else if (lineHeader == "f") {
-            if (siema) {
+            if (isShaded) {
                 unsigned int vIdx[3], tIdx[3], nIdx[3];
                 char slash;
                 ss >> vIdx[0] >> slash >> tIdx[0] >> slash >> nIdx[0]
@@ -209,14 +235,17 @@ bool loadObjFile(const string& path, vector <Vertex>& vertices, vector <GLuint>&
                 unsigned int vIdx[3];
                 ss >> vIdx[0] >> vIdx[1] >> vIdx[2];
 
+                vec3 triangleNormal = {1.0f, 1.0f, 1.0f};
+                calculateNormal(triangleNormal, tempPositions, vIdx);
+
                 for (int i = 0; i < 3; ++ i) {
                     Vertex vertex;
                     vertex.position[0] = tempPositions[vIdx[i] - 1][0];
                     vertex.position[1] = tempPositions[vIdx[i] - 1][1];
                     vertex.position[2] = tempPositions[vIdx[i] - 1][2];
-                    vertex.normal[0] = 0.0f;
-                    vertex.normal[1] = 0.0f;
-                    vertex.normal[2] = 0.0f;
+                    vertex.normal[0] = triangleNormal[0];
+                    vertex.normal[1] = triangleNormal[1];
+                    vertex.normal[2] = triangleNormal[2];
                     vertex.color[0] = 1.0f;
                     vertex.color[1] = 0.0f;
                     vertex.color[2] = 0.0f;
@@ -261,7 +290,7 @@ void printIndices(const vector<GLuint>& indices) {
 int main() {
     vector <Vertex> testV;
     vector <GLuint> testI;
-    loadObjFile(basePath + "\\Resource Files\\Objects\\teapot.obj", testV, testI, false);
+    loadObjFile(basePath + "\\Resource Files\\Objects\\teapot.obj", testV, testI);
 
     //printVertices(testV);
     //printIndices(testI);
@@ -328,14 +357,14 @@ int main() {
 
 
 
-    vec3 cubePos = {1.0f, 1.0f, 0.0f};
-    mat4x4 cubeModel;
-    mat4x4_identity(cubeModel);
-    mat4x4_translate(cubeModel, cubePos[0], cubePos[1], cubePos[2]);
+    vec3 modelPos = {1.0f, 1.0f, 0.0f};
+    mat4x4 model;
+    mat4x4_identity(model);
+    mat4x4_translate(model, modelPos[0], modelPos[1], modelPos[2]);
 
     shaderProgram.Activate();
     glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor[0], lightColor[1], lightColor[2], lightColor[3]);
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, (const GLfloat*)cubeModel);
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, (const GLfloat*)model);
 
 
 
@@ -343,8 +372,8 @@ int main() {
     // Włączamy testowanie głębokości
     glEnable(GL_DEPTH_TEST);
 
-    vec3 position = {2.0f, 2.0f, 5.0f};
-    Camera camera(width, height, position);
+    vec3 camPosition = {2.0f, 2.0f, 5.0f};
+    Camera camera(width, height, camPosition);
 
     float FOV = 45.0f;
 
@@ -393,34 +422,34 @@ int main() {
             // Zmiana pozycji światła
             if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
                 vec3 temp;
-                vec3_scale(temp, camera.Orientation, 0.0003f); // Ruch do przodu
+                vec3_scale(temp, camera.Orientation, speed); // Ruch do przodu
                 vec3_add(lightPos, lightPos, temp);
             }
             if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
                 vec3 temp;
-                vec3_scale(temp, camera.Orientation, -0.0003f); // Ruch do tyłu
+                vec3_scale(temp, camera.Orientation, -speed); // Ruch do tyłu
                 vec3_add(lightPos, lightPos, temp);
             }
             if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
                 vec3 temp;
-                vec3_scale(temp, right, -0.0003f); // Ruch w lewo
+                vec3_scale(temp, right, -speed); // Ruch w lewo
                 vec3_add(lightPos, lightPos, temp);
             }
             if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
                 vec3 temp;
-                vec3_scale(temp, right, 0.0003f); // Ruch w prawo
+                vec3_scale(temp, right, speed); // Ruch w prawo
                 vec3_add(lightPos, lightPos, temp);
             }
             if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-                lightPos[1] += 0.0003f;
+                lightPos[1] += speed;
             if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-                lightPos[1] -= 0.0003f;  
+                lightPos[1] -= speed;  
         }
 
 
 
         cube.Draw(shaderProgram, camera);
-        //light.Draw(lightShader, camera);
+        light.Draw(lightShader, camera);
 
         // Zmieniamy bufor
         glfwSwapBuffers(window);
