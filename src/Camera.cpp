@@ -33,7 +33,7 @@ void Camera::Matrix(Shader& shader){
 }
 
 
-void Camera::Inputs(GLFWwindow* window){
+void Camera::Inputs(GLFWwindow* window, float speed){
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS){
         vec3 temp;
         vec3_scale(temp, Orientation, speed);

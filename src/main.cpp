@@ -348,8 +348,15 @@ int main() {
 
     float FOV = 45.0f;
 
+    float deltaTime = 0.0f;
+    float lastFrame = 0.0f;
+
     // Pętla renderująca
     while (!glfwWindowShouldClose(window)) {
+        float crntFrame = glfwGetTime();
+        deltaTime = crntFrame - lastFrame;
+        lastFrame = crntFrame;
+
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -364,6 +371,8 @@ int main() {
         glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos[0], lightPos[1], lightPos[2]);
         glUniform3f(glGetUniformLocation(shaderProgram.ID, "camPos"), camera.Position[0], camera.Position[1], camera.Position[2]);
 
+        float speed = 2.0f * deltaTime;
+        float fovSpeed = 20.0f * deltaTime;
 
         // Wektor pomocniczy do ruchu po plaszcznie X kamery
         vec3 right;
@@ -372,12 +381,12 @@ int main() {
         if (ifCamera){
             // Zmiana FOV
             if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) 
-                if (FOV - 0.01f >= 10.0f) FOV -= 0.01f;
+                if (FOV - 0.01f >= 10.0f) FOV -= fovSpeed;
             if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) 
-                if (FOV + 0.01f <= 120.0f) FOV += 0.01f;
+                if (FOV + 0.01f <= 120.0f) FOV += fovSpeed;
 
             // Zmiana kamery
-            camera.Inputs(window);
+            camera.Inputs(window, speed);
             camera.updateMatrix(FOV, 0.1f, 100.0f);
             camera.Matrix(shaderProgram);
         } else { 

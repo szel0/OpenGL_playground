@@ -19,7 +19,6 @@ class Camera{
         int width;
         int height;
 
-        float speed = 0.001f;
         float sens = 100.0f;
 
         Camera(int width, int height, vec3 position);
@@ -28,7 +27,7 @@ class Camera{
 
         void Matrix(Shader& shader);
 
-        void Inputs(GLFWwindow* window);
+        void Inputs(GLFWwindow* window, float speed);
 };
 
 #endif
