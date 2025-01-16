@@ -10,24 +10,151 @@
 
 #include "Mesh.h"
 
-// #include <glad/gl.h>
-// #include <GLFW/glfw3.h>
-// //#include <math.h>
-// #include <stb/stb_image.h>
-
-// #include "linmath.h"
-// #include "Texture.h"
-// #include "shaderClass.h"
-// #include "VBO.h"
-// #include "EBO.h"
-// #include "VAO.h"
-// #include "Camera.h"
-
 using namespace std;
 
-const unsigned int width = 800;
+struct KeyFrame {
+    vec3 position;
+    vec3 rotation;
+    vec3 scale;
+};
+
+KeyFrame torsoFrames[] = {
+    {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}},
+    {{0.0f, 0.0f, 10.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}},
+    {{0.0f, 0.0f, -10.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}}
+};
+
+KeyFrame limbFrames[] = {
+    {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}},
+    {{0.0f, 0.0f, 0.0f}, {0.7f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}},
+    {{0.0f, 0.0f, 0.0f}, {-0.7f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}}
+};
+
+void vec3_interpolate(vec3& out, const vec3& start, const vec3& end, float t) {
+    out[0] = start[0] + t * (end[0] - start[0]);
+    out[1] = start[1] + t * (end[1] - start[1]);
+    out[2] = start[2] + t * (end[2] - start[2]);
+}
+
+void vec3_interpolate_scale(mat4x4& transform, const vec3& start, const vec3& end, float t) {
+    vec3 scale;
+    vec3_interpolate(scale, start, end, t);
+    mat4x4_scale_aniso(transform, transform, scale[0], scale[1], scale[2]);
+}
+
+void mat4x4_set_rotation(mat4x4& transform, const mat4x4& rotationMatrix) {
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            transform[i][j] = rotationMatrix[i][j];
+        }
+    }
+}
+
+void mat4x4_set_scale(mat4x4& transform, const vec3& scale) {
+    // Ustaw skalę na diagonalnych elementach
+    transform[0][0] = scale[0]; // Skala X
+    transform[1][1] = scale[1]; // Skala Y
+    transform[2][2] = scale[2]; // Skala Z
+
+    // Upewniamy się, że inne wartości nie zmieniają transformacji
+    transform[0][1] = transform[0][2] = transform[0][3] = 0.0f; // Zerowanie reszty w wierszu 1
+    transform[1][0] = transform[1][2] = transform[1][3] = 0.0f; // Zerowanie reszty w wierszu 2
+    transform[2][0] = transform[2][1] = transform[2][3] = 0.0f; // Zerowanie reszty w wierszu 3
+
+    // Wartości dla ostatniego wiersza i kolumny w macierzy
+    transform[3][0] = transform[3][1] = transform[3][2] = 0.0f; // Zerowanie przesunięcia
+    transform[3][3] = 1.0f; // Współczynnik jednorodności
+}
+
+class SceneNode {
+    public:
+        Mesh* mesh;
+        mat4x4 localTransform;
+        vector<SceneNode*> children;
+        vector<KeyFrame> keyFrames;
+        float currentTime;
+        float speedFactor;
+        array<float, 3> hipOffset;
+
+        SceneNode(Mesh* mesh = nullptr, array<float, 3> hipOffset = {0.0f, 0.0f, 0.0f}): mesh(mesh), speedFactor(0.4f), hipOffset(hipOffset) {
+            mat4x4_identity(localTransform);
+            currentTime = 0.0f;
+        }
+
+        void addKeyFrame(const KeyFrame& keyFrame) {
+            keyFrames.push_back(keyFrame);
+        }
+
+        void updateAnimation(float deltaTime) {
+            if (keyFrames.empty()) return;
+
+            // Aktualizacja indeksu klatki
+            currentTime += deltaTime * speedFactor;
+            if (currentTime >= 1.0f) {
+                currentTime = 0.0f;  // Reset do pierwszej klatki po przejściu przez wszystkie
+            }
+
+            // Oblicz indeksy poprzedniej i następnej klatki
+            size_t prevIndex = static_cast<size_t>(currentTime * (keyFrames.size() - 1));
+            size_t nextIndex = (prevIndex + 1) % keyFrames.size();
+
+            KeyFrame* prev = &keyFrames[prevIndex];
+            KeyFrame* next = &keyFrames[nextIndex];
+
+            // Interpolacja między poprzednią a następną klatką
+            float t = currentTime * (keyFrames.size() - 1) - prevIndex;
+
+            // Interpolacja pozycji, rotacji i skali
+            vec3 interpolatedPosition, interpolatedRotation, interpolatedScale;
+            vec3_interpolate(interpolatedPosition, prev->position, next->position, t);
+            vec3_interpolate(interpolatedRotation, prev->rotation, next->rotation, t);
+            vec3_interpolate(interpolatedScale, prev->scale, next->scale, t);
+
+
+
+            // Kumulatywna transformacja
+            mat4x4 tempTransform;
+            mat4x4_identity(tempTransform);
+
+            mat4x4_translate(tempTransform, interpolatedPosition[0], interpolatedPosition[1], interpolatedPosition[2]);
+
+
+            mat4x4_rotate_X(tempTransform, tempTransform, interpolatedRotation[0]);
+            mat4x4_rotate_Y(tempTransform, tempTransform, interpolatedRotation[1]);
+            mat4x4_rotate_Z(tempTransform, tempTransform, interpolatedRotation[2]);
+
+            mat4x4_scale_aniso(tempTransform, tempTransform, interpolatedScale[0], interpolatedScale[1], interpolatedScale[2]);
+
+            mat4x4_dup(localTransform, tempTransform);
+
+            for (SceneNode* child : children) {
+                child->updateAnimation(deltaTime);
+            }
+        }
+
+        void addChild(SceneNode* child) {
+            children.push_back(child);
+        }
+
+        void draw(Shader& shader, Camera& camera, mat4x4 parentTransform) {
+            mat4x4 globalTransform;
+            mat4x4_mul(globalTransform, parentTransform, localTransform);
+
+            if (mesh) {
+                shader.Activate();
+                glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, (const GLfloat*)globalTransform);
+                mesh->Draw(shader, camera);
+            }
+
+            for (SceneNode* child: children) {
+                child->draw(shader, camera, globalTransform);
+            }
+        }
+};
+
+const unsigned int width = 1600;
 const unsigned int height = 800;
-vec3 lightPos = {2.0f, 2.0f, 4.5f};
+vec3 lightPos = {0.0f, 13.0f, 0.0f};
 
 bool ifCamera = true;
 
@@ -219,30 +346,6 @@ bool loadObjFile(const string& path, vector <Vertex>& vertices, vector <GLuint>&
     return true;
 }
 
-void printVertices(const vector<Vertex>& vertices) {
-    for (size_t i = 0; i < vertices.size(); ++i) {
-        const Vertex& v = vertices[i];
-        cout << "Vertex " << i << ":\n";
-        cout << "Position: (" << v.position[0] << ", " << v.position[1] << ", " << v.position[2] << ")\n";
-        cout << "Normal: (" << v.normal[0] << ", " << v.normal[1] << ", " << v.normal[2] << ")\n";
-        cout << "Color: (" << v.color[0] << ", " << v.color[1] << ", " << v.color[2] << ")\n";
-        cout << "TexUV: (" << v.texUV[0] << ", " << v.texUV[1] << ")\n";
-        cout << "-----------------------------\n";
-    }
-    cout << vertices.size() << endl;
-}
-
-void printIndices(const vector<GLuint>& indices) {
-    for (size_t i = 0; i < indices.size(); i += 3) {
-        cout<< "Indices: ";
-        for (int j = 0; j < 3; ++ j) {
-            cout << indices[i + j] << " ";
-        }
-        cout << endl;
-    }
-    cout << indices.size() << endl;
-}
-
 int main() {
     // Inicjalizacja GLFW
     glfwInit();
@@ -282,31 +385,139 @@ int main() {
 
     Texture texDefault((basePath + "\\Resource Files\\Textures\\red.png").c_str(), GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
 
+    vector <Mesh> objMeshes;
+    vector <Mesh> lightMeshes;
+
     vector <Vertex> objVerts;
     vector <GLuint> objInds;
     string objMaterialFile = "12345";
-    loadObjFile(basePath + "\\Resource Files\\Objects\\ICE.obj", objVerts, objInds, objMaterialFile);
-    cout << "dzien dobry" << endl;
 
-    Mesh obj;
+    Mesh leftLeg, rightLeg, torso, rightArm, leftArm;
     Material objMaterial;
 
-    if (objMaterialFile.substr(objMaterialFile.length() - 4) == ".mtl") {    
-        loadMaterial(objMaterialFile, objMaterial);
-        cout << objMaterial.Ka[0] << " " << objMaterial.Ka[1] << " " << objMaterial.Ka[2] << endl; 
-        cout << objMaterial.Kd[0] << " " << objMaterial.Kd[1] << " " << objMaterial.Kd[2] << endl; 
-        cout << objMaterial.Ks[0] << " " << objMaterial.Ks[1] << " " << objMaterial.Ks[2] << endl; 
-        cout << objMaterial.Ns <<  endl; 
-        cout << objMaterial.map_Kd <<  endl;
-        Texture tex((basePath + "\\Resource Files\\Textures\\" + objMaterial.map_Kd).c_str(), GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
-        obj = Mesh(objVerts, objInds, tex);
-    } else {
-        obj = Mesh(objVerts, objInds, texDefault);
-        objMaterial.Ka[0] = 0.2f; objMaterial.Ka[1] = 0.2f; objMaterial.Ka[2] = 0.2f;
-        objMaterial.Kd[0] = 0.8f; objMaterial.Kd[1] = 0.8f; objMaterial.Kd[2] = 0.8f;
-        objMaterial.Ks[0] = 1.0f; objMaterial.Ks[1] = 1.0f; objMaterial.Ks[2] = 1.0f;
-        objMaterial.Ns = 32.0f;
-    }
+    loadObjFile(basePath + "\\Resource Files\\Objects\\LeftLeg.obj", objVerts, objInds, objMaterialFile);
+
+    loadMaterial(objMaterialFile, objMaterial);
+    cout << objMaterial.Ka[0] << " " << objMaterial.Ka[1] << " " << objMaterial.Ka[2] << endl; 
+    cout << objMaterial.Kd[0] << " " << objMaterial.Kd[1] << " " << objMaterial.Kd[2] << endl; 
+    cout << objMaterial.Ks[0] << " " << objMaterial.Ks[1] << " " << objMaterial.Ks[2] << endl; 
+    cout << objMaterial.Ns <<  endl; 
+    cout << objMaterial.map_Kd <<  endl;
+    Texture tex((basePath + "\\Resource Files\\Textures\\" + objMaterial.map_Kd).c_str(), GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+    leftLeg = Mesh(objVerts, objInds, tex);
+
+    objVerts.clear();
+    objInds.clear();
+    loadObjFile(basePath + "\\Resource Files\\Objects\\RightLeg.obj", objVerts, objInds, objMaterialFile);
+    rightLeg = Mesh(objVerts, objInds, tex);
+
+    objVerts.clear();
+    objInds.clear();
+    loadObjFile(basePath + "\\Resource Files\\Objects\\Torso.obj", objVerts, objInds, objMaterialFile);
+    torso = Mesh(objVerts, objInds, tex);
+    
+    objVerts.clear();
+    objInds.clear();
+    loadObjFile(basePath + "\\Resource Files\\Objects\\RightArm.obj", objVerts, objInds, objMaterialFile);
+    rightArm = Mesh(objVerts, objInds, tex);
+    
+    objVerts.clear();
+    objInds.clear();
+    loadObjFile(basePath + "\\Resource Files\\Objects\\LeftArm.obj", objVerts, objInds, objMaterialFile);
+    leftArm = Mesh(objVerts, objInds, tex);  
+
+    SceneNode torsoNode(&torso, {0.0f, 0.0f, 0.0f});
+    SceneNode leftLegNode(&leftLeg, {0.0f, 4.0f, 0.0f});
+    SceneNode rightLegNode(&rightLeg, {0.0f, 0.0f, 0.0f});
+    SceneNode leftArmNode(&leftArm, {0.0f, 0.0f, 0.0f});
+    SceneNode rightArmNode(&rightArm, {0.0f, 0.0f, 0.0f});
+
+    torsoNode.addChild(&leftLegNode);
+    torsoNode.addChild(&rightLegNode);
+    torsoNode.addChild(&leftArmNode);
+    torsoNode.addChild(&rightArmNode);
+
+
+    torsoNode.addKeyFrame(torsoFrames[0]);
+    torsoNode.addKeyFrame(torsoFrames[1]);
+    torsoNode.addKeyFrame(torsoFrames[0]);
+    torsoNode.addKeyFrame(torsoFrames[2]);
+    torsoNode.addKeyFrame(torsoFrames[0]);
+
+    leftLegNode.addKeyFrame(limbFrames[0]);    
+    leftLegNode.addKeyFrame(limbFrames[1]); 
+    leftLegNode.addKeyFrame(limbFrames[0]); 
+    leftLegNode.addKeyFrame(limbFrames[2]); 
+    leftLegNode.addKeyFrame(limbFrames[0]);
+    leftLegNode.addKeyFrame(limbFrames[1]); 
+    leftLegNode.addKeyFrame(limbFrames[0]); 
+    leftLegNode.addKeyFrame(limbFrames[2]); 
+    leftLegNode.addKeyFrame(limbFrames[0]);
+    leftLegNode.addKeyFrame(limbFrames[1]); 
+    leftLegNode.addKeyFrame(limbFrames[0]); 
+    leftLegNode.addKeyFrame(limbFrames[2]); 
+    leftLegNode.addKeyFrame(limbFrames[0]);
+    leftLegNode.addKeyFrame(limbFrames[1]); 
+    leftLegNode.addKeyFrame(limbFrames[0]); 
+    leftLegNode.addKeyFrame(limbFrames[2]); 
+    leftLegNode.addKeyFrame(limbFrames[0]);
+
+    rightLegNode.addKeyFrame(limbFrames[0]);
+    rightLegNode.addKeyFrame(limbFrames[2]);
+    rightLegNode.addKeyFrame(limbFrames[0]);
+    rightLegNode.addKeyFrame(limbFrames[1]);
+    rightLegNode.addKeyFrame(limbFrames[0]);
+    rightLegNode.addKeyFrame(limbFrames[2]);
+    rightLegNode.addKeyFrame(limbFrames[0]);
+    rightLegNode.addKeyFrame(limbFrames[1]);
+    rightLegNode.addKeyFrame(limbFrames[0]);
+    rightLegNode.addKeyFrame(limbFrames[2]);
+    rightLegNode.addKeyFrame(limbFrames[0]);
+    rightLegNode.addKeyFrame(limbFrames[1]);
+    rightLegNode.addKeyFrame(limbFrames[0]);
+    rightLegNode.addKeyFrame(limbFrames[2]);
+    rightLegNode.addKeyFrame(limbFrames[0]);
+    rightLegNode.addKeyFrame(limbFrames[1]);
+    rightLegNode.addKeyFrame(limbFrames[0]);
+
+
+    rightArmNode.addKeyFrame(limbFrames[0]);    
+    rightArmNode.addKeyFrame(limbFrames[1]); 
+    rightArmNode.addKeyFrame(limbFrames[0]); 
+    rightArmNode.addKeyFrame(limbFrames[2]); 
+    rightArmNode.addKeyFrame(limbFrames[0]);
+    rightArmNode.addKeyFrame(limbFrames[1]); 
+    rightArmNode.addKeyFrame(limbFrames[0]); 
+    rightArmNode.addKeyFrame(limbFrames[2]); 
+    rightArmNode.addKeyFrame(limbFrames[0]);
+    rightArmNode.addKeyFrame(limbFrames[1]); 
+    rightArmNode.addKeyFrame(limbFrames[0]); 
+    rightArmNode.addKeyFrame(limbFrames[2]); 
+    rightArmNode.addKeyFrame(limbFrames[0]);
+    rightArmNode.addKeyFrame(limbFrames[1]); 
+    rightArmNode.addKeyFrame(limbFrames[0]); 
+    rightArmNode.addKeyFrame(limbFrames[2]); 
+    rightArmNode.addKeyFrame(limbFrames[0]);
+
+
+    leftArmNode.addKeyFrame(limbFrames[0]);
+    leftArmNode.addKeyFrame(limbFrames[2]);
+    leftArmNode.addKeyFrame(limbFrames[0]);
+    leftArmNode.addKeyFrame(limbFrames[1]);
+    leftArmNode.addKeyFrame(limbFrames[0]);
+    leftArmNode.addKeyFrame(limbFrames[2]);
+    leftArmNode.addKeyFrame(limbFrames[0]);
+    leftArmNode.addKeyFrame(limbFrames[1]);
+    leftArmNode.addKeyFrame(limbFrames[0]);
+    leftArmNode.addKeyFrame(limbFrames[2]);
+    leftArmNode.addKeyFrame(limbFrames[0]);
+    leftArmNode.addKeyFrame(limbFrames[1]);
+    leftArmNode.addKeyFrame(limbFrames[0]);
+    leftArmNode.addKeyFrame(limbFrames[2]);
+    leftArmNode.addKeyFrame(limbFrames[0]);
+    leftArmNode.addKeyFrame(limbFrames[1]);
+    leftArmNode.addKeyFrame(limbFrames[0]);
+
 
     shaderProgram.Activate();
     glUniform3f(glGetUniformLocation(shaderProgram.ID, "Ka"), objMaterial.Ka[0], objMaterial.Ka[1], objMaterial.Ka[2]);
@@ -350,7 +561,7 @@ int main() {
     // Włączamy testowanie głębokości
     glEnable(GL_DEPTH_TEST);
 
-    vec3 camPosition = {2.0f, 2.0f, 5.0f};
+    vec3 camPosition = {-14.0f, 11.0f, 2.0f};
     Camera camera(width, height, camPosition);
 
     float FOV = 45.0f;
@@ -358,9 +569,12 @@ int main() {
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
 
+    int counter = 0;
+
     // Pętla renderująca
     while (!glfwWindowShouldClose(window)) {
         float crntFrame = glfwGetTime();
+        counter = 0;
         deltaTime = crntFrame - lastFrame;
         lastFrame = crntFrame;
 
@@ -424,10 +638,17 @@ int main() {
                 lightPos[1] -= speed;  
         }
 
-
-
-        obj.Draw(shaderProgram, camera);
         light.Draw(lightShader, camera);
+
+        // Aktualizacja animacji z deltaTime
+        torsoNode.updateAnimation(deltaTime);
+        
+
+        // Rysowanie węzła korzenia z transformacją globalną
+        mat4x4 identityMatrix;
+        mat4x4_identity(identityMatrix);  // Macierz jednostkowa dla korzenia
+
+        torsoNode.draw(shaderProgram, camera, identityMatrix);
 
         // Zmieniamy bufor
         glfwSwapBuffers(window);
