@@ -116,7 +116,7 @@ class SceneNode {
             mat4x4 tempTransform;
             mat4x4_identity(tempTransform);
 
-            mat4x4_translate(tempTransform, interpolatedPosition[0], interpolatedPosition[1], interpolatedPosition[2]);
+            mat4x4_translate(tempTransform, interpolatedPosition[0] + hipOffset[0], interpolatedPosition[1] + hipOffset[1], interpolatedPosition[2] + hipOffset[2]);
 
 
             mat4x4_rotate_X(tempTransform, tempTransform, interpolatedRotation[0]);
@@ -427,10 +427,10 @@ int main() {
     leftArm = Mesh(objVerts, objInds, tex);  
 
     SceneNode torsoNode(&torso, {0.0f, 0.0f, 0.0f});
-    SceneNode leftLegNode(&leftLeg, {0.0f, 4.0f, 0.0f});
-    SceneNode rightLegNode(&rightLeg, {0.0f, 0.0f, 0.0f});
-    SceneNode leftArmNode(&leftArm, {0.0f, 0.0f, 0.0f});
-    SceneNode rightArmNode(&rightArm, {0.0f, 0.0f, 0.0f});
+    SceneNode leftLegNode(&leftLeg, {1.2f, 3.907f, 0.0f});
+    SceneNode rightLegNode(&rightLeg, {-1.2f, 3.907f, 0.0f});
+    SceneNode leftArmNode(&leftArm, {2.3643f, 7.9696f, 0.0f});
+    SceneNode rightArmNode(&rightArm, {-2.3643f, 7.9696f, 0.0f});
 
     torsoNode.addChild(&leftLegNode);
     torsoNode.addChild(&rightLegNode);
@@ -561,7 +561,7 @@ int main() {
     // Włączamy testowanie głębokości
     glEnable(GL_DEPTH_TEST);
 
-    vec3 camPosition = {-14.0f, 11.0f, 2.0f};
+    vec3 camPosition = {0.0f, 10.0f, 25.0f};
     Camera camera(width, height, camPosition);
 
     float FOV = 45.0f;
